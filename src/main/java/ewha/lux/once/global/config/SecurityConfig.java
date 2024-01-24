@@ -56,6 +56,7 @@ public class SecurityConfig {
                     .requestMatchers("/user/duplicate").permitAll()
                     .requestMatchers("/user/login").permitAll()
                     .requestMatchers("/user/auto").permitAll()
+                    .requestMatchers("/user/card/search").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
