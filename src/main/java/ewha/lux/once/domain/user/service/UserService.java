@@ -1,11 +1,16 @@
 package ewha.lux.once.domain.user.service;
 
-import ewha.lux.once.domain.user.dto.SignInRequestDto;
-import ewha.lux.once.domain.user.dto.SignupRequestDto;
-import ewha.lux.once.domain.user.dto.UserEditResponseDto;
+import ewha.lux.once.domain.home.entity.Card;
+import ewha.lux.once.domain.home.entity.CardCompany;
+import ewha.lux.once.domain.home.entity.OwnedCard;
+import ewha.lux.once.domain.home.repository.CardCompanyRepository;
+import ewha.lux.once.domain.home.repository.CardRepository;
+import ewha.lux.once.domain.home.repository.OwnedCardRepository;
+import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,13 +22,19 @@ import org.springframework.util.StringUtils;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CardRepository cardRepository;
+    private final CardCompanyRepository cardCompanyRepository;
+    private final OwnedCardRepository ownedCardRepository;
 
     public Users signup(SignupRequestDto request) throws ParseException {
         String loginId = request.getLoginId();
@@ -80,6 +91,49 @@ public class UserService implements UserDetailsService {
     public UserEditResponseDto getUserEdit(Users nowUser){
         return UserEditResponseDto.fromEntity(nowUser);
     }
+
+    public List<CardSearchListDto> getSearchCard(String code){
+        String[] codes = code.split(",");
+        List<CardSearchListDto> response = new ArrayList<>();
+
+        for (String companycode : codes) {
+            CardCompany cardCompany = cardCompanyRepository.findByCode(companycode);
+            CardSearchListDto cardSearchListDto = new CardSearchListDto();
+            cardSearchListDto.setCompanyName(cardCompany.getName());
+            System.out.println(cardCompany.getName());
+
+            List<Card> cards = cardRepository.findAllByCardCompany(cardCompany);
+            List<CardSearchDto> cardSearchDtos = new ArrayList<>();
+
+            for (Card card : cards) {
+                CardSearchDto cardSearchDto = new CardSearchDto();
+                cardSearchDto.setCardId(card.getId());
+                cardSearchDto.setCardName(card.getName());
+                cardSearchDto.setCardImg(card.getImgUrl());
+                cardSearchDtos.add(cardSearchDto);
+            }
+            cardSearchListDto.setCardList(cardSearchDtos);
+            response.add(cardSearchListDto);
+
+        }
+        return response;
+    }
+    public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto){
+        List<Long> card_list = requestDto.getCardList();
+        for (Long cardId : card_list) {
+            Card card = cardRepository.findById(cardId).get();
+            OwnedCard ownedCard = OwnedCard.builder()
+                    .users(nowUser)
+                    .card(card)
+                    .isMain(false)
+                    .performanceCondition(0)
+                    .currentPerformance(0)
+                    .build();
+            ownedCardRepository.save(ownedCard);
+        }
+        return;
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
