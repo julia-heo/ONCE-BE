@@ -45,7 +45,4 @@ public class ChatHistory extends BaseEntity {
     @Column(name = "category")
     private String category;
 
-    public boolean getHasPaid() {
-        return this.hasPaid = hasPaid;
-    }
 }

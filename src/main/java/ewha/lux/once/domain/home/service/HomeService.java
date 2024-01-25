@@ -84,13 +84,19 @@ public class HomeService {
         String cardName = chatHistory.getCardName();
         Card card = cardRepository.findByName(cardName);
         OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardAndUsers(card,nowUser);
+        boolean isMain = ownedCard.isMain(); // 주카드인 경우 실제 실적을 불러옴
 
-        if(chatHistory.getHasPaid()==true){
+
+        if(chatHistory.isHasPaid()==true){
             chatHistory.setHasPaid(false);
-            ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()-paymentAmount);
+            if(isMain==false) {
+                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()-paymentAmount);
+            }
         } else {
             chatHistory.setHasPaid(true);
-            ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()+paymentAmount);
+            if(isMain==false) {
+                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()+paymentAmount);
+            }
         }
 
         chatHistoryRepository.save(chatHistory);
