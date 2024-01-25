@@ -8,6 +8,7 @@ import lombok.*;
 @Entity
 @Table(name="OwnedCard")
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
