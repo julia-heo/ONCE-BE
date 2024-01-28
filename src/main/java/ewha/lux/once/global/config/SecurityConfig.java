@@ -37,6 +37,7 @@ public class SecurityConfig {
                             config.setAllowedOrigins(List.of("*"));
 //                            config.setAllowedOrigins(List.of("https://a.com", "https://b.com")); // 프론트
                             config.setAllowedMethods(List.of("*"));
+                            config.setAllowedHeaders(List.of("Authorization","Authorization-refresh"));
                             return config;
                         };
                         c.configurationSource(source);
