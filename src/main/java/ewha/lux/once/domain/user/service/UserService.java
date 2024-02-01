@@ -10,7 +10,6 @@ import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.domain.user.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,14 +17,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +35,7 @@ public class UserService implements UserDetailsService {
     private final CardRepository cardRepository;
     private final CardCompanyRepository cardCompanyRepository;
     private final OwnedCardRepository ownedCardRepository;
+    private final S3Uploader s3Uploader;
 
     public Users signup(SignupRequestDto request) throws ParseException {
         String loginId = request.getLoginId();
@@ -50,13 +51,15 @@ public class UserService implements UserDetailsService {
 
         password = passwordEncoder.encode(password);
         Timestamp now = new Timestamp(System.currentTimeMillis());
+        String basicProfileImgUrl = "https://once-s3.s3.ap-northeast-2.amazonaws.com/profileImg/basic-profile.png";
 
         Users.UsersBuilder usersBuilder = Users.builder()
                 .loginId(loginId)
                 .username(username)
                 .nickname(nickname)
                 .password(password)
-                .lastLogin(now);
+                .lastLogin(now)
+                .profileImg(basicProfileImgUrl);
 
         // phone 값이 존재하는 경우에만 설정
         if (StringUtils.hasText(phone)) {
@@ -86,6 +89,11 @@ public class UserService implements UserDetailsService {
         users.setLastLogin();
         usersRepository.save(users);
         return users;
+    }
+
+    public void deleteUsers(Users nowUser){
+        usersRepository.delete(nowUser);
+        return;
     }
 
     public UserEditResponseDto getUserEdit(Users nowUser){
@@ -134,6 +142,14 @@ public class UserService implements UserDetailsService {
         return;
     }
 
+    public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException {
+        if(!userProfileImg.isEmpty()) {
+            String storedFileName = s3Uploader.upload(userProfileImg,nowUser.getLoginId()+"-profile.png");
+            nowUser.setProfileImg(storedFileName);
+        }
+        usersRepository.save(nowUser);
+        return nowUser.getProfileImg();
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
