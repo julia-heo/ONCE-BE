@@ -1,4 +1,4 @@
-package ewha.lux.once.domain.home.entity;
+package ewha.lux.once.domain.card.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

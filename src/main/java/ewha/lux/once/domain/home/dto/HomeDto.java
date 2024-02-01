@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class homeDto {
+public class HomeDto {
     private String nickname;
     private List<String> keywordList;
 }

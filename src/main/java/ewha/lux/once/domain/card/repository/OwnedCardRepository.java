@@ -1,7 +1,7 @@
-package ewha.lux.once.domain.home.repository;
+package ewha.lux.once.domain.card.repository;
 
-import ewha.lux.once.domain.home.entity.Card;
-import ewha.lux.once.domain.home.entity.OwnedCard;
+import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.user.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 

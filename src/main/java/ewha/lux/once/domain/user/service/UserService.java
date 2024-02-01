@@ -1,11 +1,11 @@
 package ewha.lux.once.domain.user.service;
 
-import ewha.lux.once.domain.home.entity.Card;
-import ewha.lux.once.domain.home.entity.CardCompany;
-import ewha.lux.once.domain.home.entity.OwnedCard;
-import ewha.lux.once.domain.home.repository.CardCompanyRepository;
-import ewha.lux.once.domain.home.repository.CardRepository;
-import ewha.lux.once.domain.home.repository.OwnedCardRepository;
+import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.CardCompany;
+import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.card.repository.CardCompanyRepository;
+import ewha.lux.once.domain.card.repository.CardRepository;
+import ewha.lux.once.domain.card.repository.OwnedCardRepository;
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.domain.user.repository.UsersRepository;
