@@ -43,7 +43,6 @@ public class UserController {
         } catch (Exception e){
             return ResponseEntity.ok(ResponseDto.response(2000,0, "회원가입 실패"));
         }
-
     }
 
     @PostMapping("/login") // 로그인
@@ -59,7 +58,6 @@ public class UserController {
         } catch (Exception e){
             return ResponseEntity.ok(ResponseDto.response(2000,0, "로그인 실패"));
         }
-
     }
 
     @DeleteMapping ("/quit")
