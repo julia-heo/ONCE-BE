@@ -4,7 +4,6 @@ import ewha.lux.once.global.common.BaseEntity;
 import jakarta.persistence.*;
 
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -94,4 +93,9 @@ public class Users extends BaseEntity implements UserDetails {
         this.birthday = birthday;
         this.phone = phone;
     }
+
+    public void setProfileImg(String profileImg) {
+        this.profileImg = profileImg;
+    }
+
 }
