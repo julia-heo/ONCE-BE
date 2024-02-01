@@ -29,5 +29,15 @@ public class HomeController {
         homeService.getPayCardHistory(userAccount.getUsers(),chat_id);
         return ResponseEntity.ok(ResponseDto.response(1000,1,"결제여부 변경 성공"));
     }
+    @GetMapping ("/announcement")
+    public ResponseEntity<ResponseDto<Object>> announce (@AuthenticationPrincipal UserAccount userAccount){
+        return ResponseEntity.ok(ResponseDto.response(1000,1,"알림 조회 성공",homeService.getAnnounce(userAccount.getUsers())));
+    }
+
+    @GetMapping ("/announcement/{announceId}")
+    public ResponseEntity<ResponseDto<Object>> announcedetail (@PathVariable Long announceId){
+        return ResponseEntity.ok(ResponseDto.response(1000,1,"알림 상세 조회 성공",homeService.getAnnounceDetail(announceId)));
+    }
+
 
 }
