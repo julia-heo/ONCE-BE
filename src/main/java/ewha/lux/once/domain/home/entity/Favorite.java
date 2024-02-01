@@ -6,16 +6,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name="OwnedCard")
+@Table(name="Favorite")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class OwnedCard extends BaseEntity {
+public class Favorite extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ownedCardId")
+    @Column(name = "favoriteId")
     private Long id;
 
     @ManyToOne
@@ -23,15 +23,8 @@ public class OwnedCard extends BaseEntity {
     private Users users;
 
     @ManyToOne
-    @JoinColumn(name = "cardId")
-    private Card card;
+    @JoinColumn(name = "storeId")
+    private Store store;
 
-    @Column(name = "isMain")
-    private boolean isMain;
 
-    @Column(name = "performanceCondition")
-    private Integer performanceCondition;
-
-    @Column(name = "currentPerformance")
-    private Integer currentPerformance;
 }
