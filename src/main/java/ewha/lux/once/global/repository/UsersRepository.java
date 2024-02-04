@@ -1,4 +1,4 @@
-package ewha.lux.once.domain.user.repository;
+package ewha.lux.once.global.repository;
 
 import ewha.lux.once.domain.user.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;

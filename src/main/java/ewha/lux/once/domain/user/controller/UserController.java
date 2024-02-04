@@ -39,9 +39,9 @@ public class UserController {
             String refreshToken = jwtProvider.generateRefreshToken(users.getLoginId());
 
             LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(),accessToken,refreshToken);
-            return ResponseEntity.ok(ResponseDto.response(1000,1, "회원가입 성공",loginResponseDto));
+            return ResponseEntity.ok(ResponseDto.response(1000,true, "요청에 성공하였습니다.",loginResponseDto));
         } catch (Exception e){
-            return ResponseEntity.ok(ResponseDto.response(2000,0, "회원가입 실패"));
+            return ResponseEntity.ok(ResponseDto.response(2000,false, "요청에 성공하였습니다."));
         }
     }
 
@@ -54,9 +54,9 @@ public class UserController {
             String refreshToken = jwtProvider.generateRefreshToken(user.getLoginId());
 
             LoginResponseDto loginResponseDto = new LoginResponseDto(user.getId(),accessToken,refreshToken);
-            return ResponseEntity.ok(ResponseDto.response(1000,1, "로그인 성공",loginResponseDto));
+            return ResponseEntity.ok(ResponseDto.response(1000,true, "요청에 성공하였습니다.",loginResponseDto));
         } catch (Exception e){
-            return ResponseEntity.ok(ResponseDto.response(2000,0, "로그인 실패"));
+            return ResponseEntity.ok(ResponseDto.response(2000,false, "요청에 실패하였습니다."));
         }
     }
 
@@ -64,32 +64,32 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<ResponseDto<Object>> quitUsers (@AuthenticationPrincipal UserAccount userAccount) {
         userService.deleteUsers(userAccount.getUsers());
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"회원 탈퇴에 성공했습니다"));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다."));
     }
 
     @GetMapping("/edit")
     @ResponseBody
     public ResponseEntity<ResponseDto<Object>> userEdit (@AuthenticationPrincipal UserAccount userAccount) {
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"내 정보 수정하기 페이지 조회 성공",userService.getUserEdit(userAccount.getUsers())));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",userService.getUserEdit(userAccount.getUsers())));
     }
 
     @GetMapping("/card/search")
     @ResponseBody
     public ResponseEntity<ResponseDto<Object>> searchCard (@Param("code")String code) {
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"카드 검색 성공",userService.getSearchCard(code)));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",userService.getSearchCard(code)));
     }
 
     @PostMapping("/card")
     @ResponseBody
     public ResponseEntity<ResponseDto<Object>> postSearchCard (@AuthenticationPrincipal UserAccount userAccount,@RequestBody postSearchCardListRequestDto request) {
         userService.postSearchCard(userAccount.getUsers(),request);
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"카드 등록 성공"));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다."));
     }
 
     @PatchMapping(value="/edit/profile",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
     public ResponseEntity<ResponseDto<Object>> editProfile (@AuthenticationPrincipal UserAccount userAccount, HttpServletRequest request, @RequestParam(value="userProfileImg") MultipartFile userProfileImg) throws IOException {
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"프로필 이미지 수정 성공",userService.patchEditProfile(userAccount.getUsers(),userProfileImg)));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",userService.patchEditProfile(userAccount.getUsers(),userProfileImg)));
     }
 }
 

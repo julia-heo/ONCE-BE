@@ -50,7 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("utf-8");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,1, "access token이 검증되었습니다.", loginResponseDto))));
+                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,true, "access token이 검증되었습니다.", loginResponseDto))));
                 return;
             } else if (!jwtProvider.validateAccessTokenExpiration(refreshToken)) { // accesstoken 만료, refreshtoken이 유효한 경우
                 Users users = jwtProvider.validateTokenAndGetUsers(refreshToken);
@@ -60,13 +60,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("utf-8");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,1, "access token이 재발급되었습니다.", loginResponseDto))));
+                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,true, "access token이 재발급되었습니다.", loginResponseDto))));
                 return;
             } else { // refreshtoken 만료
                 response.setContentType("application/json");
                 response.setCharacterEncoding("utf-8");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, 1, "refresh token이 만료되었습니다. 다시 로그인해주세요"))));
+                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "refresh token이 만료되었습니다. 다시 로그인해주세요"))));
                 return;
             }
         }
@@ -80,6 +80,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
 
 
         filterChain.doFilter(request, response);
