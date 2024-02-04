@@ -18,25 +18,25 @@ public class HomeController {
     @GetMapping()
     public ResponseEntity<ResponseDto<Object>> homeChat (@AuthenticationPrincipal UserAccount userAccount, @RequestParam(name = "keyword") String keyword,@RequestParam(name = "paymentAmount") int paymentAmount ){
 
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"챗봇 카드 추천 성공",homeService.getHomeChat(userAccount.getUsers(),keyword,paymentAmount)));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",homeService.getHomeChat(userAccount.getUsers(),keyword,paymentAmount)));
     }
     @GetMapping("/basic")
     public ResponseEntity<ResponseDto<Object>> home (@AuthenticationPrincipal UserAccount userAccount){
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"홈화면 기본 정보 조회 성공",homeService.getHome(userAccount.getUsers())));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",homeService.getHome(userAccount.getUsers())));
     }
     @PatchMapping ("/{chat_id}")
     public ResponseEntity<ResponseDto<Object>> payCardHistory (@AuthenticationPrincipal UserAccount userAccount, @PathVariable Long chat_id){
         homeService.getPayCardHistory(userAccount.getUsers(),chat_id);
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"결제여부 변경 성공"));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다."));
     }
     @GetMapping ("/announcement")
     public ResponseEntity<ResponseDto<Object>> announce (@AuthenticationPrincipal UserAccount userAccount){
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"알림 조회 성공",homeService.getAnnounce(userAccount.getUsers())));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",homeService.getAnnounce(userAccount.getUsers())));
     }
 
     @GetMapping ("/announcement/{announceId}")
     public ResponseEntity<ResponseDto<Object>> announcedetail (@PathVariable Long announceId){
-        return ResponseEntity.ok(ResponseDto.response(1000,1,"알림 상세 조회 성공",homeService.getAnnounceDetail(announceId)));
+        return ResponseEntity.ok(ResponseDto.response(1000,true,"요청에 성공하였습니다.",homeService.getAnnounceDetail(announceId)));
     }
 
 

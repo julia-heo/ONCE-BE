@@ -1,4 +1,4 @@
-package ewha.lux.once.domain.home.repository;
+package ewha.lux.once.global.repository;
 
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.user.entity.Users;

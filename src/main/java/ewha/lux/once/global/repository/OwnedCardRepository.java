@@ -1,4 +1,4 @@
-package ewha.lux.once.domain.card.repository;
+package ewha.lux.once.global.repository;
 
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.OwnedCard;

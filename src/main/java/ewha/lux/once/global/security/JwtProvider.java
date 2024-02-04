@@ -1,7 +1,7 @@
 package ewha.lux.once.global.security;
 
 import ewha.lux.once.domain.user.entity.Users;
-import ewha.lux.once.domain.user.repository.UsersRepository;
+import ewha.lux.once.global.repository.UsersRepository;
 import ewha.lux.once.domain.user.service.UserService;
 import io.jsonwebtoken.*;
 import lombok.Getter;
@@ -52,7 +52,7 @@ public class JwtProvider {
     }
 
     // 토큰 유효성 확인, t/f 반환
-    public boolean validateToken(String token){
+    public boolean validateToken(String token) throws ExpiredJwtException {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -80,16 +80,6 @@ public class JwtProvider {
         return usersRepository.findByLoginId(loginId);
     }
 
-
-    // 토큰에서 subject 추출
-    public String extractSubjectFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
 
     // 토큰 만료 여부 확인
     public boolean validateAccessTokenExpiration(String  token) {
