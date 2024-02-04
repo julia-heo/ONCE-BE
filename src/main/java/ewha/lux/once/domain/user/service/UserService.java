@@ -3,6 +3,8 @@ package ewha.lux.once.domain.user.service;
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.CardCompany;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.global.common.CustomException;
+import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.CardCompanyRepository;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
@@ -76,14 +78,14 @@ public class UserService implements UserDetailsService {
         return usersRepository.save(usersBuilder.benefitGoal(100000).build());
     }
 
-    public Users authenticate(SignInRequestDto request) {
+    public Users authenticate(SignInRequestDto request) throws CustomException {
         String loginId = request.getLoginId();
         String password = request.getPassword();
 
         Users users = usersRepository.findByLoginId(loginId);
 
         if (!passwordEncoder.matches(password, users.getPassword())){
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new CustomException(ResponseCode.FAILED_TO_LOGIN);
         }
 
         users.setLastLogin();
