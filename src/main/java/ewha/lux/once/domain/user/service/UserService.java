@@ -133,6 +133,9 @@ public class UserService implements UserDetailsService {
 
     public List<CardNameSearchDto> getSearchCardName(String name) throws CustomException{
         List<Card> cards = cardRepository.findAllByNameContains(name);
+        if (cards.isEmpty()) {
+            throw new CustomException(ResponseCode.NO_SEARCH_RESULTS);
+        }
         return cards.stream()
                 .map(card -> new CardNameSearchDto(
                         card.getId(),
