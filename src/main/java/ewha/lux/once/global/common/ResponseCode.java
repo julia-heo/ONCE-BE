@@ -28,6 +28,7 @@ public enum ResponseCode {
     CARD_COMPANY_NOT_FOUND(3101, false,"존재하지 않는 카드사입니다."),
     CHAT_HISTORY_NOT_FOUND(3102, false,"존재하지 않는 채팅입니다."),
     ANNOUNCEMENT_NOT_FOUND(3103, false,"존재하지 않는 알림입니다."),
+    NO_SEARCH_RESULTS(3104, false, "검색 결과가 없습니다"),
     // 3200~ :
 
 
