@@ -2,6 +2,7 @@ package ewha.lux.once.domain.home.controller;
 
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
+import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.common.UserAccount;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +34,12 @@ public class HomeController {
     // [Patch] 결제 여부 변경
     @PatchMapping("/{chat_id}")
     public CommonResponse<?> payCardHistory(@AuthenticationPrincipal UserAccount userAccount, @PathVariable Long chat_id) {
-        homeService.getPayCardHistory(userAccount.getUsers(), chat_id);
-        return new CommonResponse<>(ResponseCode.SUCCESS);
+        try {
+            homeService.getPayCardHistory(userAccount.getUsers(), chat_id);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 알림 list 조회
@@ -46,7 +51,12 @@ public class HomeController {
     // [Get] 알림 상세 조회
     @GetMapping("/announcement/{announceId}")
     public CommonResponse<?> announcedetail(@PathVariable Long announceId) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+
     }
 
 

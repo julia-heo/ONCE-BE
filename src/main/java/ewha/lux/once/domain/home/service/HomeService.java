@@ -5,6 +5,8 @@ import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.global.common.CustomException;
+import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.AnnouncementRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
@@ -14,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,12 +80,14 @@ public class HomeService {
         return new HomeDto(nowUser.getNickname(),topKeywords);
 
     }
-    public void getPayCardHistory(Users nowUser, Long chatId){
-        ChatHistory chatHistory = chatHistoryRepository.findById(chatId).get();
+    public void getPayCardHistory(Users nowUser, Long chatId) throws CustomException {
+        Optional<ChatHistory> optionalChatHistory = chatHistoryRepository.findById(chatId);
+        ChatHistory chatHistory = optionalChatHistory.orElseThrow(() ->  new CustomException(ResponseCode.CHAT_HISTORY_NOT_FOUND));
         int paymentAmount = chatHistory.getPaymentAmount();
 
         String cardName = chatHistory.getCardName();
-        Card card = cardRepository.findByName(cardName);
+        Optional<Card> optionalCard = cardRepository.findByName(cardName);
+        Card card = optionalCard.orElseThrow(() -> new CustomException(ResponseCode.CARD_NOT_FOUND));
         OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardAndUsers(card,nowUser);
         boolean isMain = ownedCard.isMain(); // 주카드인 경우 실제 실적을 불러옴
 
@@ -137,8 +138,9 @@ public class HomeService {
 
         return new AnnouncListDto(uncheckedcnt,todayAnnounceDto,recentAnnounceDto);
     }
-    public AnnounceDetailDto getAnnounceDetail(Long announceId){
-        Announcement announcement = announcementRepository.findById(announceId).get();
+    public AnnounceDetailDto getAnnounceDetail(Long announceId) throws CustomException {
+        Optional<Announcement> optionalAnnouncement = announcementRepository.findById(announceId);
+        Announcement announcement = optionalAnnouncement.orElseThrow(() -> new CustomException(ResponseCode.ANNOUNCEMENT_NOT_FOUND));
         announcement.setHasCheck(true);
         announcementRepository.save(announcement);
         return new AnnounceDetailDto(announcement);
