@@ -1,9 +1,6 @@
 package ewha.lux.once.domain.user.controller;
 
-import ewha.lux.once.domain.user.dto.LoginResponseDto;
-import ewha.lux.once.domain.user.dto.SignInRequestDto;
-import ewha.lux.once.domain.user.dto.SignupRequestDto;
-import ewha.lux.once.domain.user.dto.postSearchCardListRequestDto;
+import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.domain.user.service.UserService;
 import ewha.lux.once.global.common.CommonResponse;
@@ -139,6 +136,17 @@ public class UserController {
     public CommonResponse<?> idDuplicateCheck(@Param("loginId") String loginId) {
         try {
             return new CommonResponse<>(ResponseCode.SUCCESS, userService.getIdDuplicateCheck(loginId));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Post] 비밀번호 확인
+    @PostMapping(value = "/edit/pw")
+    @ResponseBody
+    public CommonResponse<?> checkPassword(@AuthenticationPrincipal UserAccount userAccount, @RequestBody CheckPasswordRequestDto checkPasswordRequestDto) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getCheckPassword(userAccount.getUsers(), checkPasswordRequestDto));
         } catch (CustomException e){
             return new CommonResponse<>(e.getStatus());
         }

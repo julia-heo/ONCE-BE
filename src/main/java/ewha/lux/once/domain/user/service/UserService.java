@@ -179,6 +179,10 @@ public class UserService implements UserDetailsService {
         return true;
     }
 
+    public boolean getCheckPassword(Users nowUser, CheckPasswordRequestDto checkPasswordRequestDto) throws CustomException {
+        return passwordEncoder.matches(checkPasswordRequestDto.getPassword(), nowUser.getPassword());
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         Users users = usersRepository.findByLoginId(username).get();
