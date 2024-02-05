@@ -77,7 +77,7 @@ public class JwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
         String loginId = claims.getSubject();
-        return usersRepository.findByLoginId(loginId);
+        return usersRepository.findByLoginId(loginId).get();
     }
 
 

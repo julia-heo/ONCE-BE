@@ -5,6 +5,8 @@ import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.global.common.CustomException;
+import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.AnnouncementRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
@@ -14,10 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +26,7 @@ public class HomeService {
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
     private final AnnouncementRepository announcementRepository;
-    public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount){
+    public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
         // 파인튜닝한 GPT에 keyword, paymentAmount, 보유 카드 번호, 해당 혜택 정보 전송
         // 파인튜닝한 GPT에게 cardId, benefit, discount 반환받음
 
@@ -58,7 +57,7 @@ public class HomeService {
         return new ChatDto(nowUser.getNickname(), ownedCardCount, savedChat.getId(),exampleCard.getName(),exampleCard.getImgUrl(),benefit,discount);
     }
 
-    public HomeDto getHome(Users nowUser){
+    public HomeDto getHome(Users nowUser) throws CustomException {
         // 사용자별 맞춤형 키워드 조회
         List<ChatHistory> allChatHistory = chatHistoryRepository.findByUsers(nowUser);
 
@@ -81,12 +80,14 @@ public class HomeService {
         return new HomeDto(nowUser.getNickname(),topKeywords);
 
     }
-    public void getPayCardHistory(Users nowUser, Long chatId){
-        ChatHistory chatHistory = chatHistoryRepository.findById(chatId).get();
+    public void getPayCardHistory(Users nowUser, Long chatId) throws CustomException {
+        Optional<ChatHistory> optionalChatHistory = chatHistoryRepository.findById(chatId);
+        ChatHistory chatHistory = optionalChatHistory.orElseThrow(() ->  new CustomException(ResponseCode.CHAT_HISTORY_NOT_FOUND));
         int paymentAmount = chatHistory.getPaymentAmount();
 
         String cardName = chatHistory.getCardName();
-        Card card = cardRepository.findByName(cardName);
+        Optional<Card> optionalCard = cardRepository.findByName(cardName);
+        Card card = optionalCard.orElseThrow(() -> new CustomException(ResponseCode.CARD_NOT_FOUND));
         OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardAndUsers(card,nowUser);
         boolean isMain = ownedCard.isMain(); // 주카드인 경우 실제 실적을 불러옴
 
@@ -109,7 +110,7 @@ public class HomeService {
         return;
     }
 
-    public AnnouncListDto getAnnounce(Users nowUser){
+    public AnnouncListDto getAnnounce(Users nowUser) throws CustomException {
         LocalDate today = LocalDate.now();
         LocalDate thisWeek = today.minusDays(7);
 
@@ -137,8 +138,9 @@ public class HomeService {
 
         return new AnnouncListDto(uncheckedcnt,todayAnnounceDto,recentAnnounceDto);
     }
-    public AnnounceDetailDto getAnnounceDetail(Long announceId){
-        Announcement announcement = announcementRepository.findById(announceId).get();
+    public AnnounceDetailDto getAnnounceDetail(Long announceId) throws CustomException {
+        Optional<Announcement> optionalAnnouncement = announcementRepository.findById(announceId);
+        Announcement announcement = optionalAnnouncement.orElseThrow(() -> new CustomException(ResponseCode.ANNOUNCEMENT_NOT_FOUND));
         announcement.setHasCheck(true);
         announcementRepository.save(announcement);
         return new AnnounceDetailDto(announcement);

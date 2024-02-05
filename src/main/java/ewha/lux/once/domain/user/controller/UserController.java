@@ -11,7 +11,6 @@ import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.common.UserAccount;
 import ewha.lux.once.global.security.JwtProvider;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
@@ -43,8 +42,8 @@ public class UserController {
 
             LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
             return new CommonResponse<>(ResponseCode.SUCCESS, loginResponseDto);
-        } catch (Exception e) {
-            return new CommonResponse<>(ResponseCode.SUCCESS); // ** 예외 처리 필요 **
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
         }
     }
 
@@ -69,37 +68,57 @@ public class UserController {
     @DeleteMapping("/quit")
     @ResponseBody
     public CommonResponse<?> quitUsers(@AuthenticationPrincipal UserAccount userAccount) {
-        userService.deleteUsers(userAccount.getUsers());
-        return new CommonResponse<>(ResponseCode.SUCCESS);
+        try{
+            userService.deleteUsers(userAccount.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 회원 정보 조회
     @GetMapping("/edit")
     @ResponseBody
     public CommonResponse<?> userEdit(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, userService.getUserEdit(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getUserEdit(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 카드사별 카드 검색
     @GetMapping("/card/search")
     @ResponseBody
-    public CommonResponse<?> searchCard(@Param("code") String code) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, userService.getSearchCard(code));
+    public CommonResponse<?> searchCard(@Param("code") String code) throws CustomException {
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getSearchCard(code));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Post] 카드 등록
     @PostMapping("/card")
     @ResponseBody
     public CommonResponse<?> postSearchCard(@AuthenticationPrincipal UserAccount userAccount, @RequestBody postSearchCardListRequestDto request) {
-        userService.postSearchCard(userAccount.getUsers(), request);
-        return new CommonResponse<>(ResponseCode.SUCCESS);
+        try {
+            userService.postSearchCard(userAccount.getUsers(), request);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Patch] 프로필 등록
     @PatchMapping(value = "/edit/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
-    public CommonResponse<?> editProfile(@AuthenticationPrincipal UserAccount userAccount, HttpServletRequest request, @RequestParam(value = "userProfileImg") MultipartFile userProfileImg) throws IOException {
-        return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchEditProfile(userAccount.getUsers(), userProfileImg));
+    public CommonResponse<?> editProfile(@AuthenticationPrincipal UserAccount userAccount, @RequestParam(value = "userProfileImg") MultipartFile userProfileImg) throws IOException {
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchEditProfile(userAccount.getUsers(), userProfileImg));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 }
 

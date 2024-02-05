@@ -2,6 +2,7 @@ package ewha.lux.once.domain.home.controller;
 
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
+import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.common.UserAccount;
 import lombok.RequiredArgsConstructor;
@@ -20,33 +21,53 @@ public class HomeController {
     // [Get] 챗봇 카드 추천
     @GetMapping()
     public CommonResponse<?> homeChat(@AuthenticationPrincipal UserAccount userAccount, @RequestParam(name = "keyword") String keyword, @RequestParam(name = "paymentAmount") int paymentAmount) {
-
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHomeChat(userAccount.getUsers(), keyword, paymentAmount));
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHomeChat(userAccount.getUsers(), keyword, paymentAmount));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 홈 화면 기본 정보 조회
     @GetMapping("/basic")
     public CommonResponse<?> home(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHome(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHome(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Patch] 결제 여부 변경
     @PatchMapping("/{chat_id}")
     public CommonResponse<?> payCardHistory(@AuthenticationPrincipal UserAccount userAccount, @PathVariable Long chat_id) {
-        homeService.getPayCardHistory(userAccount.getUsers(), chat_id);
-        return new CommonResponse<>(ResponseCode.SUCCESS);
+        try {
+            homeService.getPayCardHistory(userAccount.getUsers(), chat_id);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 알림 list 조회
     @GetMapping("/announcement")
     public CommonResponse<?> announce(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounce(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounce(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 알림 상세 조회
     @GetMapping("/announcement/{announceId}")
     public CommonResponse<?> announcedetail(@PathVariable Long announceId) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+
     }
 
 

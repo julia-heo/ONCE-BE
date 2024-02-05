@@ -3,19 +3,18 @@ package ewha.lux.once.domain.user.service;
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.CardCompany;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.user.dto.*;
+import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.CardCompanyRepository;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
-import ewha.lux.once.domain.user.dto.*;
-import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -28,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class UserService implements UserDetailsService {
     private final OwnedCardRepository ownedCardRepository;
     private final S3Uploader s3Uploader;
 
-    public Users signup(SignupRequestDto request) throws ParseException {
+    public Users signup(SignupRequestDto request) throws CustomException, ParseException {
         String loginId = request.getLoginId();
         String username =  request.getUsername();
         String password = request.getPassword();
@@ -48,7 +48,7 @@ public class UserService implements UserDetailsService {
         String birth = request.getBirthday();
 
         if (usersRepository.existsByLoginId(loginId)) {
-            throw new RuntimeException("이미 존재하는 ID 입니다 -> " + loginId);
+            throw new CustomException(ResponseCode.DUPLICATED_USER_NAME);
         }
 
         password = passwordEncoder.encode(password);
@@ -82,7 +82,8 @@ public class UserService implements UserDetailsService {
         String loginId = request.getLoginId();
         String password = request.getPassword();
 
-        Users users = usersRepository.findByLoginId(loginId);
+        Optional<Users> optionalUsers = usersRepository.findByLoginId(loginId);
+        Users users = optionalUsers.orElseThrow(() -> new CustomException(ResponseCode.INVALID_USER_ID));
 
         if (!passwordEncoder.matches(password, users.getPassword())){
             throw new CustomException(ResponseCode.FAILED_TO_LOGIN);
@@ -93,24 +94,24 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
-    public void deleteUsers(Users nowUser){
+    public void deleteUsers(Users nowUser) throws CustomException {
         usersRepository.delete(nowUser);
         return;
     }
 
-    public UserEditResponseDto getUserEdit(Users nowUser){
+    public UserEditResponseDto getUserEdit(Users nowUser) throws CustomException {
         return UserEditResponseDto.fromEntity(nowUser);
     }
 
-    public List<CardSearchListDto> getSearchCard(String code){
+    public List<CardSearchListDto> getSearchCard(String code) throws CustomException {
         String[] codes = code.split(",");
         List<CardSearchListDto> response = new ArrayList<>();
 
         for (String companycode : codes) {
-            CardCompany cardCompany = cardCompanyRepository.findByCode(companycode);
+            Optional<CardCompany> optionalCardCompany = cardCompanyRepository.findByCode(companycode);
+            CardCompany cardCompany = optionalCardCompany.orElseThrow(() -> new CustomException(ResponseCode.CARD_COMPANY_NOT_FOUND));
             CardSearchListDto cardSearchListDto = new CardSearchListDto();
             cardSearchListDto.setCompanyName(cardCompany.getName());
-            System.out.println(cardCompany.getName());
 
             List<Card> cards = cardRepository.findAllByCardCompany(cardCompany);
             List<CardSearchDto> cardSearchDtos = new ArrayList<>();
@@ -128,10 +129,11 @@ public class UserService implements UserDetailsService {
         }
         return response;
     }
-    public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto){
+    public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto) throws CustomException {
         List<Long> card_list = requestDto.getCardList();
         for (Long cardId : card_list) {
-            Card card = cardRepository.findById(cardId).get();
+            Optional<Card> optionalCard = cardRepository.findById(cardId);
+            Card card = optionalCard.orElseThrow(() -> new CustomException(ResponseCode.CARD_NOT_FOUND));
             OwnedCard ownedCard = OwnedCard.builder()
                     .users(nowUser)
                     .card(card)
@@ -144,7 +146,7 @@ public class UserService implements UserDetailsService {
         return;
     }
 
-    public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException {
+    public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException, CustomException {
         if(!userProfileImg.isEmpty()) {
             String storedFileName = s3Uploader.upload(userProfileImg,nowUser.getLoginId()+"-profile.png");
             nowUser.setProfileImg(storedFileName);
@@ -154,9 +156,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users users = usersRepository.findByLoginId(username);
-
+    public UserDetails loadUserByUsername(String username) {
+        Users users = usersRepository.findByLoginId(username).get();
         return new User(users.getLoginId(), users.getPassword(),
                 users.getAuthorities());
     }
