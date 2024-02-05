@@ -98,6 +98,18 @@ public class UserController {
         }
     }
 
+    // [Get] 카드 이름 검색
+    @GetMapping("/card/searchname")
+    @ResponseBody
+    public CommonResponse<?> searchCardName(@Param("name") String name) {
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getSearchCardName(name));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+
     // [Post] 카드 등록
     @PostMapping("/card")
     @ResponseBody

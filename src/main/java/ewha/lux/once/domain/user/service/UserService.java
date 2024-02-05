@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -129,6 +130,19 @@ public class UserService implements UserDetailsService {
         }
         return response;
     }
+
+    public List<CardNameSearchDto> getSearchCardName(String name) throws CustomException{
+        List<Card> cards = cardRepository.findAllByNameContains(name);
+        return cards.stream()
+                .map(card -> new CardNameSearchDto(
+                        card.getId(),
+                        card.getName(),
+                        card.getImgUrl(),
+                        card.getCardCompany().getName()
+                ))
+                .collect(Collectors.toList());
+    }
+
     public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto) throws CustomException {
         List<Long> card_list = requestDto.getCardList();
         for (Long cardId : card_list) {
