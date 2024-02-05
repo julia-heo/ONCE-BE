@@ -132,6 +132,17 @@ public class UserController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] 아이디 중복 확인
+    @GetMapping(value = "/duplicate")
+    @ResponseBody
+    public CommonResponse<?> idDuplicateCheck(@Param("loginId") String loginId) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getIdDuplicateCheck(loginId));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 }
 
 

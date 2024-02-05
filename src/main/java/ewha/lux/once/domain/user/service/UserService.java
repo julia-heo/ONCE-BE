@@ -172,6 +172,13 @@ public class UserService implements UserDetailsService {
         return nowUser.getProfileImg();
     }
 
+    public boolean getIdDuplicateCheck(String loginId) throws CustomException {
+        if(usersRepository.existsByLoginId(loginId)) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         Users users = usersRepository.findByLoginId(username).get();
