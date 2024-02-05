@@ -94,12 +94,12 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
-    public void deleteUsers(Users nowUser){
+    public void deleteUsers(Users nowUser) throws CustomException {
         usersRepository.delete(nowUser);
         return;
     }
 
-    public UserEditResponseDto getUserEdit(Users nowUser){
+    public UserEditResponseDto getUserEdit(Users nowUser) throws CustomException {
         return UserEditResponseDto.fromEntity(nowUser);
     }
 
@@ -146,7 +146,7 @@ public class UserService implements UserDetailsService {
         return;
     }
 
-    public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException {
+    public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException, CustomException {
         if(!userProfileImg.isEmpty()) {
             String storedFileName = s3Uploader.upload(userProfileImg,nowUser.getLoginId()+"-profile.png");
             nowUser.setProfileImg(storedFileName);

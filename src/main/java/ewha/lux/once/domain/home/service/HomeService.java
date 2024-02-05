@@ -26,7 +26,7 @@ public class HomeService {
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
     private final AnnouncementRepository announcementRepository;
-    public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount){
+    public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
         // 파인튜닝한 GPT에 keyword, paymentAmount, 보유 카드 번호, 해당 혜택 정보 전송
         // 파인튜닝한 GPT에게 cardId, benefit, discount 반환받음
 
@@ -57,7 +57,7 @@ public class HomeService {
         return new ChatDto(nowUser.getNickname(), ownedCardCount, savedChat.getId(),exampleCard.getName(),exampleCard.getImgUrl(),benefit,discount);
     }
 
-    public HomeDto getHome(Users nowUser){
+    public HomeDto getHome(Users nowUser) throws CustomException {
         // 사용자별 맞춤형 키워드 조회
         List<ChatHistory> allChatHistory = chatHistoryRepository.findByUsers(nowUser);
 
@@ -110,7 +110,7 @@ public class HomeService {
         return;
     }
 
-    public AnnouncListDto getAnnounce(Users nowUser){
+    public AnnouncListDto getAnnounce(Users nowUser) throws CustomException {
         LocalDate today = LocalDate.now();
         LocalDate thisWeek = today.minusDays(7);
 

@@ -68,15 +68,23 @@ public class UserController {
     @DeleteMapping("/quit")
     @ResponseBody
     public CommonResponse<?> quitUsers(@AuthenticationPrincipal UserAccount userAccount) {
-        userService.deleteUsers(userAccount.getUsers());
-        return new CommonResponse<>(ResponseCode.SUCCESS);
+        try{
+            userService.deleteUsers(userAccount.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 회원 정보 조회
     @GetMapping("/edit")
     @ResponseBody
     public CommonResponse<?> userEdit(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, userService.getUserEdit(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getUserEdit(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 카드사별 카드 검색
@@ -106,7 +114,11 @@ public class UserController {
     @PatchMapping(value = "/edit/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseBody
     public CommonResponse<?> editProfile(@AuthenticationPrincipal UserAccount userAccount, @RequestParam(value = "userProfileImg") MultipartFile userProfileImg) throws IOException {
-        return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchEditProfile(userAccount.getUsers(), userProfileImg));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchEditProfile(userAccount.getUsers(), userProfileImg));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 }
 

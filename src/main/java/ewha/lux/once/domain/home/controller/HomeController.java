@@ -21,14 +21,21 @@ public class HomeController {
     // [Get] 챗봇 카드 추천
     @GetMapping()
     public CommonResponse<?> homeChat(@AuthenticationPrincipal UserAccount userAccount, @RequestParam(name = "keyword") String keyword, @RequestParam(name = "paymentAmount") int paymentAmount) {
-
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHomeChat(userAccount.getUsers(), keyword, paymentAmount));
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHomeChat(userAccount.getUsers(), keyword, paymentAmount));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 홈 화면 기본 정보 조회
     @GetMapping("/basic")
     public CommonResponse<?> home(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHome(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getHome(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Patch] 결제 여부 변경
@@ -45,7 +52,11 @@ public class HomeController {
     // [Get] 알림 list 조회
     @GetMapping("/announcement")
     public CommonResponse<?> announce(@AuthenticationPrincipal UserAccount userAccount) {
-        return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounce(userAccount.getUsers()));
+        try{
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounce(userAccount.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 
     // [Get] 알림 상세 조회
