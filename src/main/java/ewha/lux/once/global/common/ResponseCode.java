@@ -8,6 +8,7 @@ public enum ResponseCode {
     1000 : Request 성공
     */
     SUCCESS(1000, true, "요청에 성공하였습니다."),
+    CHANGE_PW_SUCCESS(1000, true, "비밀 번호 수정을 성공했습니다."),
 
 
     /*

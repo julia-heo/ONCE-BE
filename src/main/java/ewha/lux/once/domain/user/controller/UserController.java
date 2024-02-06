@@ -144,9 +144,20 @@ public class UserController {
     // [Post] 비밀번호 확인
     @PostMapping(value = "/edit/pw")
     @ResponseBody
-    public CommonResponse<?> checkPassword(@AuthenticationPrincipal UserAccount userAccount, @RequestBody CheckPasswordRequestDto checkPasswordRequestDto) {
+    public CommonResponse<?> checkPassword(@AuthenticationPrincipal UserAccount userAccount, @RequestBody ChangePasswordDto checkPasswordRequestDto) {
         try {
-            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getCheckPassword(userAccount.getUsers(), checkPasswordRequestDto));
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.postCheckPassword(userAccount.getUsers(), checkPasswordRequestDto));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Patch] 비밀번호 변경
+    @PatchMapping(value = "/edit/pw")
+    @ResponseBody
+    public CommonResponse<?> changePassword(@AuthenticationPrincipal UserAccount userAccount, @RequestBody ChangePasswordDto changePasswordDto) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchChangePassword(userAccount.getUsers(), changePasswordDto));
         } catch (CustomException e){
             return new CommonResponse<>(e.getStatus());
         }
