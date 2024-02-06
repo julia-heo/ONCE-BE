@@ -172,6 +172,22 @@ public class UserService implements UserDetailsService {
         return nowUser.getProfileImg();
     }
 
+    public boolean getIdDuplicateCheck(String loginId) throws CustomException {
+        if(usersRepository.existsByLoginId(loginId)) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean postCheckPassword(Users nowUser, ChangePasswordDto checkPasswordRequestDto) throws CustomException {
+        return passwordEncoder.matches(checkPasswordRequestDto.getPassword(), nowUser.getPassword());
+    }
+
+    public String patchChangePassword(Users nowUser, ChangePasswordDto changePasswordDto) throws CustomException {
+        nowUser.updatePassword(passwordEncoder.encode(changePasswordDto.getPassword()));
+        return ResponseCode.CHANGE_PW_SUCCESS.getMessage();
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         Users users = usersRepository.findByLoginId(username).get();

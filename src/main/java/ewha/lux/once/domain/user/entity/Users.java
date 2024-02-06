@@ -98,4 +98,8 @@ public class Users extends BaseEntity implements UserDetails {
         this.profileImg = profileImg;
     }
 
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
 }
