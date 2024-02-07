@@ -30,7 +30,7 @@ public class UserEditResponseDto {
         userEditResponseDto.setLoginId(users.getLoginId());
 
 
-        LocalDateTime createdAt = users.getCreated_at();
+        LocalDateTime createdAt = users.getCreatedAt();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
         String formattedDate = createdAt.format(formatter);
         userEditResponseDto.setCreatedAt(formattedDate);

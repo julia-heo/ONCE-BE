@@ -17,7 +17,7 @@ public class AnnounceDetailDto {
         this.content = announce.getContent();
         this.moreInfo = announce.getMoreInfo();
         this.type = announce.getType();
-        this.announceDate = announce.getCreated_at().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss"));
+        this.announceDate = announce.getCreatedAt().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss"));
     }
 
 }

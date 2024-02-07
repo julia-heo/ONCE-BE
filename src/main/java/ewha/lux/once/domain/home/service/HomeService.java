@@ -118,22 +118,22 @@ public class HomeService {
 
         // 오늘 생성된 알림
         List<AnnounceDto> todayAnnounceDto = announcementList.stream()
-                .filter(announcement -> announcement.getCreated_at().toLocalDate().isEqual(today))
-                .sorted(Comparator.comparing(Announcement::getCreated_at).reversed())
+                .filter(announcement -> announcement.getCreatedAt().toLocalDate().isEqual(today))
+                .sorted(Comparator.comparing(Announcement::getCreatedAt).reversed())
                 .map(AnnounceDto::new)
                 .collect(Collectors.toList());
 
         // 7일 이내에 생성된 알림 (오늘 제외)
         List<AnnounceDto> recentAnnounceDto = announcementList.stream()
-                .filter(announcement -> !announcement.getCreated_at().toLocalDate().isEqual(today)
-                        && announcement.getCreated_at().toLocalDate().isAfter(thisWeek))
-                .sorted(Comparator.comparing(Announcement::getCreated_at).reversed())
+                .filter(announcement -> !announcement.getCreatedAt().toLocalDate().isEqual(today)
+                        && announcement.getCreatedAt().toLocalDate().isAfter(thisWeek))
+                .sorted(Comparator.comparing(Announcement::getCreatedAt).reversed())
                 .map(AnnounceDto::new)
                 .collect(Collectors.toList());
 
         long uncheckedcnt = announcementList.stream()
                 .filter(announcement -> !announcement.isHasCheck()
-                        && announcement.getCreated_at().toLocalDate().isAfter(thisWeek))
+                        && announcement.getCreatedAt().toLocalDate().isAfter(thisWeek))
                 .count();
 
         return new AnnouncListDto(uncheckedcnt,todayAnnounceDto,recentAnnounceDto);
