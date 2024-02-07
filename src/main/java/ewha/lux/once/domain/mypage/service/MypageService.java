@@ -76,7 +76,7 @@ public class MypageService {
                 .map(chatHistory -> {
                     LocalDateTime createdAt = chatHistory.getCreatedAt();
 
-                    String chatDate = createdAt.format(DateTimeFormatter.ofPattern("dd.MM"));
+                    String chatDate = createdAt.format(DateTimeFormatter.ofPattern("MM.dd"));
                     String chatTime = createdAt.format(DateTimeFormatter.ofPattern("HH:mm"));
 
                     return new ChatHistoryResponseDto.ChatListDto(
