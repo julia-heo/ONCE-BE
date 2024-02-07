@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collector;
 
 @Getter
 @Setter
@@ -22,7 +20,7 @@ public class AnnounceDto {
         this.content = announce.getContent();
         this.type = announce.getType();
         this.hasCheck = announce.isHasCheck();
-        this.announceDate = announce.getCreated_at().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss"));
+        this.announceDate = announce.getCreatedAt().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss"));
     }
 
 }
