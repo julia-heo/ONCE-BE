@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.user.entity;
 
+import ewha.lux.once.domain.user.dto.EditUserInfoRequestDto;
 import ewha.lux.once.global.common.BaseEntity;
 import jakarta.persistence.*;
 
@@ -87,11 +88,11 @@ public class Users extends BaseEntity implements UserDetails {
         this.lastLogin = new Timestamp(System.currentTimeMillis());
     }
 
-    public void update (String userPhoneNum){
-        this.username = username;
-        this.nickname = nickname;
-        this.birthday = birthday;
-        this.phone = phone;
+    public void editUserInfo(EditUserInfoRequestDto requestDto){
+        this.username = requestDto.getUsername();
+        this.nickname = requestDto.getNickname();
+        this.birthday = requestDto.getBirthday();
+        this.phone = requestDto.getUserPhoneNum();
     }
 
     public void setProfileImg(String profileImg) {
