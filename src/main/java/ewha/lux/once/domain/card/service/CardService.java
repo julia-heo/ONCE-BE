@@ -4,6 +4,7 @@ import ewha.lux.once.domain.card.dto.MyWalletResponseDto;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
+import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,10 @@ public class CardService {
 
     public MyWalletResponseDto.MyWalletProfileDto getMyWalletInfo(Users nowUser) throws CustomException {
         List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
+
+        if (ownedCards.isEmpty()) {
+            throw new CustomException(ResponseCode.OWNED_CARD_NOT_FOUND);
+        }
 
         List<MyWalletResponseDto.OwnedCardListDto> ownedCardList = ownedCards.stream()
                 .map(ownedCard -> {
