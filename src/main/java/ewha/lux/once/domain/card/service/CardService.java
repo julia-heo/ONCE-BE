@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.card.service;
 
+import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.dto.MyWalletResponseDto;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.user.entity.Users;
@@ -46,6 +47,17 @@ public class CardService {
         return MyWalletResponseDto.MyWalletProfileDto.builder()
                 .ownedCardList(ownedCardList)
                 .build();
+    }
+
+    public void postCardPerformance(Users nowUser, CardPerformanceRequestDto cardPerformanceRequestDto) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardIdAndUsers(cardPerformanceRequestDto.getOwnedCardId(), nowUser);
+        if(ownedCard != null) {
+            ownedCard.setPerformanceCondition(cardPerformanceRequestDto.getPerformanceCondition());
+            ownedCardRepository.save(ownedCard);
+        } else {
+            throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
+        }
+        return;
     }
 
     private List<MyWalletResponseDto.CardBenefitListDto> splitCardSummary(String cardSummary) {
