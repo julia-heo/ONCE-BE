@@ -9,7 +9,6 @@ import lombok.*;
 @Entity
 @Table(name="OwnedCard")
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -31,8 +30,10 @@ public class OwnedCard extends BaseEntity {
     private boolean isMain;
 
     @Column(name = "performanceCondition")
+    @Setter
     private Integer performanceCondition;
 
     @Column(name = "currentPerformance")
+    @Setter
     private Integer currentPerformance;
 }

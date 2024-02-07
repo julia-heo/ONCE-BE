@@ -31,6 +31,8 @@ public enum ResponseCode {
     CHAT_HISTORY_NOT_FOUND(3102, false,"존재하지 않는 채팅입니다."),
     ANNOUNCEMENT_NOT_FOUND(3103, false,"존재하지 않는 알림입니다."),
     NO_SEARCH_RESULTS(3104, false, "검색 결과가 없습니다"),
+    OWNED_CARD_NOT_FOUND(3105, false, "보유한 카드가 없습니다."),
+    INVALID_OWNED_CARD(3106, false, "보유한 카드가 아닙니다."),
     // 3200~ :
 
 

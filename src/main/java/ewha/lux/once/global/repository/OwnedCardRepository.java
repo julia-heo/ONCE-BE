@@ -10,6 +10,7 @@ import java.util.List;
 public interface OwnedCardRepository extends JpaRepository<OwnedCard, Long> {
     int countAllByUsers( Users users );
     OwnedCard findOwnedCardByCardAndUsers(Card card, Users users);
+    OwnedCard findOwnedCardByCardIdAndUsers(Long cardId, Users users);
 
     List<OwnedCard> findOwnedCardByUsers(Users nowUser);
 }
