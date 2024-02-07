@@ -162,6 +162,17 @@ public class UserController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Patch] 회원 정보 수정
+    @PatchMapping(value = "/edit")
+    @ResponseBody
+    public CommonResponse<?> editUserInfo(@AuthenticationPrincipal UserAccount userAccount, @RequestBody EditUserInfoRequestDto editUserInfoRequestDto) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.patchEditUserInfo(userAccount.getUsers(), editUserInfoRequestDto));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 }
 
 

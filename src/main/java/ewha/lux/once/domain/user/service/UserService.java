@@ -188,6 +188,12 @@ public class UserService implements UserDetailsService {
         return ResponseCode.CHANGE_PW_SUCCESS.getMessage();
     }
 
+    public String patchEditUserInfo(Users nowUser, EditUserInfoRequestDto editUserInfoRequestDto) throws CustomException {
+        nowUser.editUserInfo(editUserInfoRequestDto);
+        usersRepository.save(nowUser);
+        return ResponseCode.CHANGE_MYPAGE_SUCCESS.getMessage();
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) {
         Users users = usersRepository.findByLoginId(username).get();
