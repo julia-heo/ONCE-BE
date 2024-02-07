@@ -67,6 +67,11 @@ public class MypageService {
 
         List<ChatHistory> chatList = chatHistoryRepository.findByUsersAndCreatedAtBetween(nowUser, startDate, endDate);
 
+        // 채팅이 없는 경우
+        if (chatList.isEmpty()) {
+            throw new CustomException(ResponseCode.CHAT_HISTORY_NOT_FOUND);
+        }
+
         List<ChatHistoryResponseDto.ChatListDto> chatListDto = chatList.stream()
                 .map(chatHistory -> {
                     LocalDateTime createdAt = chatHistory.getCreatedAt();

@@ -25,15 +25,18 @@ public enum ResponseCode {
     INVALID_USER_ID(3001, false, "아이디가 존재하지 않습니다."),
     FAILED_TO_LOGIN(3002, false, "비밀번호가 일치하지 않습니다."),
     DUPLICATED_USER_NAME(3003, false,"이미 존재하는 아이디입니다."),
-    // 3100~ :
+
+    // 3100~ : card 관련 오류
     CARD_NOT_FOUND(3100, false,"존재하지 않는 카드입니다."),
     CARD_COMPANY_NOT_FOUND(3101, false,"존재하지 않는 카드사입니다."),
-    CHAT_HISTORY_NOT_FOUND(3102, false,"존재하지 않는 채팅입니다."),
-    ANNOUNCEMENT_NOT_FOUND(3103, false,"존재하지 않는 알림입니다."),
-    NO_SEARCH_RESULTS(3104, false, "검색 결과가 없습니다"),
-    OWNED_CARD_NOT_FOUND(3105, false, "보유한 카드가 없습니다."),
-    INVALID_OWNED_CARD(3106, false, "보유한 카드가 아닙니다."),
-    // 3200~ :
+    ANNOUNCEMENT_NOT_FOUND(3102, false,"존재하지 않는 알림입니다."),
+    NO_SEARCH_RESULTS(3103, false, "검색 결과가 없습니다"),
+    OWNED_CARD_NOT_FOUND(3104, false, "보유한 카드가 없습니다."),
+    INVALID_OWNED_CARD(3105, false, "보유한 카드가 아닙니다."),
+
+    // 3200~ : mypage 관련 오류
+    CHAT_HISTORY_NOT_FOUND(3200, false, "채팅이 존재하지 않습니다."),
+
 
 
     // =====================================
