@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.card.service;
 
+import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
 import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.dto.MontlyBenefitResponseDto;
 import ewha.lux.once.domain.card.dto.MyWalletResponseDto;
@@ -12,6 +13,7 @@ import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
+import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ public class CardService {
 
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
+    private final UsersRepository usersRepository;
 
     public MyWalletResponseDto.MyWalletProfileDto getMyWalletInfo(Users nowUser) throws CustomException {
         List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
@@ -112,6 +115,12 @@ public class CardService {
                 .remainBenefit(nowUser.getBenefitGoal() - receivedSum)
                 .benefitList(benefitList)
                 .build();
+    }
+
+    public void postBenefitGoal(Users nowUser, CardGoalRequestDto cardGoalRequestDto) throws CustomException {
+        nowUser.setCardGoal(cardGoalRequestDto.getBenefitGoal());
+        usersRepository.save(nowUser);
+        return;
     }
 
     private List<MyWalletResponseDto.CardBenefitListDto> splitCardSummary(String cardSummary) {
