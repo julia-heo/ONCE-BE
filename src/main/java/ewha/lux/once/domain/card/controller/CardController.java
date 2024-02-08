@@ -41,4 +41,15 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] 월별 혜택 조회
+    @GetMapping("/benefit")
+    @ResponseBody
+    public CommonResponse<?> montlyBenefitInfo(@AuthenticationPrincipal UserAccount user, @RequestParam int month) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, cardService.getMontlyBenefitInfo(user.getUsers(), month));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 }
