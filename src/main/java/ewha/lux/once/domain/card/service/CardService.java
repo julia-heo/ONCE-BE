@@ -76,7 +76,7 @@ public class CardService {
         }
 
         int receivedSum = chatHistories.stream()
-                .filter(chatHistory -> chatHistory.isHasPaid())
+                .filter(chatHistory -> chatHistory.isHasPaid() && chatHistory.getCreatedAt().getMonthValue() == month)
                 .mapToInt(ChatHistory::getPaymentAmount)
                 .sum();
 
