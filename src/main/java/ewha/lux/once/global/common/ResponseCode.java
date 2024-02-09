@@ -33,6 +33,7 @@ public enum ResponseCode {
     NO_SEARCH_RESULTS(3103, false, "검색 결과가 없습니다"),
     OWNED_CARD_NOT_FOUND(3104, false, "보유한 카드가 없습니다."),
     INVALID_OWNED_CARD(3105, false, "보유한 카드가 아닙니다."),
+    INVALID_MAINCARD(3106, false, "주카드가 아닙니다."),
 
     // 3200~ : mypage 관련 오류
     CHAT_HISTORY_NOT_FOUND(3200, false, "채팅이 존재하지 않습니다."),

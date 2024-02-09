@@ -135,6 +135,12 @@ public class MypageService {
     @Transactional
     public String patchReleaseMaincard(Users nowUser, Long ownedCardId) throws CustomException {
         OwnedCard ownedCard = ownedCardRepository.findById(ownedCardId).orElse(null);
+
+        // 주카드가 아닌 경우
+        if (!ownedCard.isMain()) {
+            throw new CustomException(ResponseCode.INVALID_MAINCARD);
+        }
+
         ownedCard.releaseMaincard();
 
         return ResponseCode.RELEASE_MAINCARD_SUCCESS.getMessage();
