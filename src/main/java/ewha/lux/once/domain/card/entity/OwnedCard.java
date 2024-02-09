@@ -1,6 +1,5 @@
 package ewha.lux.once.domain.card.entity;
 
-import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -36,4 +35,8 @@ public class OwnedCard extends BaseEntity {
     @Column(name = "currentPerformance")
     @Setter
     private Integer currentPerformance;
+
+    public void releaseMaincard() {
+        this.isMain = false;
+    }
 }

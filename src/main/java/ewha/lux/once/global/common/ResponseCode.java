@@ -10,7 +10,7 @@ public enum ResponseCode {
     SUCCESS(1000, true, "요청에 성공하였습니다."),
     CHANGE_PW_SUCCESS(1001, true, "비밀 번호 수정을 성공했습니다."),
     CHANGE_MYPAGE_SUCCESS(1002, true, "내 정보 수정을 성공했습니다."),
-
+    RELEASE_MAINCARD_SUCCESS(1003, true, "주카드 해제를 성공했습니다."),
 
     /*
         2000~ : Request 오류

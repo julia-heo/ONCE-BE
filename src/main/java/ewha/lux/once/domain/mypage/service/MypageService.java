@@ -17,6 +17,7 @@ import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -120,7 +121,7 @@ public class MypageService {
                             card.getName(),
                             isCreditCard,
                             card.getImgUrl()
-                            );
+                    );
                 }).toList();
 
         CardListResponseDto cardListResponseDto = CardListResponseDto.builder()
@@ -129,5 +130,13 @@ public class MypageService {
                 .build();
 
         return cardListResponseDto;
+    }
+
+    @Transactional
+    public String patchReleaseMaincard(Users nowUser, Long ownedCardId) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findById(ownedCardId).orElse(null);
+        ownedCard.releaseMaincard();
+
+        return ResponseCode.RELEASE_MAINCARD_SUCCESS.getMessage();
     }
 }

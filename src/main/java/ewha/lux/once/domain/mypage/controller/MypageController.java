@@ -8,9 +8,7 @@ import ewha.lux.once.global.common.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,5 +45,16 @@ public class MypageController {
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
+    }
+
+    // [Patch] 주카드 해제
+    @PatchMapping("/maincard/{ownedCardId}")
+    public CommonResponse<?> releaseMaincard(@AuthenticationPrincipal UserAccount user, @PathVariable("ownedCardId") Long ownedCardId) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.patchReleaseMaincard(user.getUsers(), ownedCardId));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+
     }
 }
