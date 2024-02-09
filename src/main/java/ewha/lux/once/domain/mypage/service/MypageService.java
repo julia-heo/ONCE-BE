@@ -1,16 +1,23 @@
 package ewha.lux.once.domain.mypage.service;
 
+import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.CardCompany;
+import ewha.lux.once.domain.card.entity.CardType;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.mypage.dto.CardListResponseDto;
 import ewha.lux.once.domain.mypage.dto.ChatHistoryResponseDto;
 import ewha.lux.once.domain.mypage.dto.MypageResponseDto;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
+import ewha.lux.once.global.repository.CardCompanyRepository;
+import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +31,8 @@ public class MypageService {
 
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
-
+    private final CardRepository cardRepository;
+    private final CardCompanyRepository cardCompanyRepository;
 
     public MypageResponseDto getMypageInfo(Users nowUser) throws CustomException {
 
@@ -94,5 +102,64 @@ public class MypageService {
                 .build();
 
         return chatHistoryDto;
+    }
+
+    public CardListResponseDto getCardList(Users nowUser) throws CustomException {
+        List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByUsers(nowUser);
+
+        List<CardListResponseDto.CardListDto> cardListDto = ownedCardList.stream()
+                .map(ownedCard -> {
+                    Card card = cardRepository.findById(ownedCard.getCard().getId()).orElse(null);
+                    CardCompany cardCompany = cardCompanyRepository.findById(card.getCardCompany().getId()).orElse(null);
+
+                    boolean isCreditCard = card.getType() == CardType.CreditCard;
+
+                    return new CardListResponseDto.CardListDto(
+                            ownedCard.getId(),
+                            ownedCard.isMain(),
+                            cardCompany.getName(),
+                            card.getName(),
+                            isCreditCard,
+                            card.getImgUrl()
+                    );
+                }).toList();
+
+        CardListResponseDto cardListResponseDto = CardListResponseDto.builder()
+                .cardCount(ownedCardList.size())
+                .cardList(cardListDto)
+                .build();
+
+        return cardListResponseDto;
+    }
+
+    @Transactional
+    public String patchReleaseMaincard(Users nowUser, Long ownedCardId) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByIdAndUsers(ownedCardId, nowUser);
+
+        if (ownedCard != null) {
+            // 주카드가 아닌 경우
+            if (!ownedCard.isMain()) {
+                throw new CustomException(ResponseCode.INVALID_MAINCARD);
+            }
+
+            ownedCard.releaseMaincard();
+        } else {
+            throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
+        }
+
+        return ResponseCode.RELEASE_MAINCARD_SUCCESS.getMessage();
+    }
+
+    @Transactional
+    public String deleteUserCard(Users nowUser, Long ownedCardId) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByIdAndUsers(ownedCardId, nowUser);
+
+        if (ownedCard != null) {
+            ownedCardRepository.delete(ownedCard);
+        } else {
+            throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
+        }
+
+        return ResponseCode.DELETE_CARD_SUCCESS.getMessage();
     }
 }

@@ -10,7 +10,8 @@ public enum ResponseCode {
     SUCCESS(1000, true, "요청에 성공하였습니다."),
     CHANGE_PW_SUCCESS(1001, true, "비밀 번호 수정을 성공했습니다."),
     CHANGE_MYPAGE_SUCCESS(1002, true, "내 정보 수정을 성공했습니다."),
-
+    RELEASE_MAINCARD_SUCCESS(1003, true, "주카드 해제를 성공했습니다."),
+    DELETE_CARD_SUCCESS(1004, true, "등록 카드 삭제에 성공했습니다."),
 
     /*
         2000~ : Request 오류
@@ -33,6 +34,7 @@ public enum ResponseCode {
     NO_SEARCH_RESULTS(3103, false, "검색 결과가 없습니다"),
     OWNED_CARD_NOT_FOUND(3104, false, "보유한 카드가 없습니다."),
     INVALID_OWNED_CARD(3105, false, "보유한 카드가 아닙니다."),
+    INVALID_MAINCARD(3106, false, "주카드가 아닙니다."),
 
     // 3200~ : mypage 관련 오류
     CHAT_HISTORY_NOT_FOUND(3200, false, "채팅이 존재하지 않습니다."),

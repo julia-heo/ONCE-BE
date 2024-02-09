@@ -8,9 +8,7 @@ import ewha.lux.once.global.common.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +32,36 @@ public class MypageController {
     public CommonResponse<?> chatHistory(@AuthenticationPrincipal UserAccount user, @Param("month") String month) {
         try {
             return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.getChatHistory(user.getUsers(), month));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Get] 카드 목록 조회
+    @GetMapping("/maincard")
+    public CommonResponse<?> cardList(@AuthenticationPrincipal UserAccount user) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.getCardList(user.getUsers()));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Patch] 주카드 해제
+    @PatchMapping("/maincard/{ownedCardId}")
+    public CommonResponse<?> releaseMaincard(@AuthenticationPrincipal UserAccount user, @PathVariable("ownedCardId") Long ownedCardId) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.patchReleaseMaincard(user.getUsers(), ownedCardId));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Delete] 등록 카드 삭제
+    @DeleteMapping("/maincard/{ownedCardId}")
+    public CommonResponse<?> deleteCard(@AuthenticationPrincipal UserAccount user, @PathVariable("ownedCardId") Long ownedCardId) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.deleteUserCard(user.getUsers(), ownedCardId));
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
