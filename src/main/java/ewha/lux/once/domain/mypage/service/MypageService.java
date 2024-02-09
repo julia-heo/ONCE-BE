@@ -1,12 +1,18 @@
 package ewha.lux.once.domain.mypage.service;
 
+import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.CardCompany;
+import ewha.lux.once.domain.card.entity.CardType;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.mypage.dto.CardListResponseDto;
 import ewha.lux.once.domain.mypage.dto.ChatHistoryResponseDto;
 import ewha.lux.once.domain.mypage.dto.MypageResponseDto;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
+import ewha.lux.once.global.repository.CardCompanyRepository;
+import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +30,8 @@ public class MypageService {
 
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
-
+    private final CardRepository cardRepository;
+    private final CardCompanyRepository cardCompanyRepository;
 
     public MypageResponseDto getMypageInfo(Users nowUser) throws CustomException {
 
@@ -94,5 +101,33 @@ public class MypageService {
                 .build();
 
         return chatHistoryDto;
+    }
+
+    public CardListResponseDto getCardList(Users nowUser) throws CustomException {
+        List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByUsers(nowUser);
+
+        List<CardListResponseDto.CardListDto> cardListDto = ownedCardList.stream()
+                .map(ownedCard -> {
+                    Card card = cardRepository.findById(ownedCard.getCard().getId()).orElse(null);
+                    CardCompany cardCompany = cardCompanyRepository.findById(card.getCardCompany().getId()).orElse(null);
+
+                    boolean isCreditCard = card.getType() == CardType.CreditCard;
+
+                    return new CardListResponseDto.CardListDto(
+                            ownedCard.getId(),
+                            ownedCard.isMain(),
+                            cardCompany.getName(),
+                            card.getName(),
+                            isCreditCard,
+                            card.getImgUrl()
+                            );
+                }).toList();
+
+        CardListResponseDto cardListResponseDto = CardListResponseDto.builder()
+                .cardCount(ownedCardList.size())
+                .cardList(cardListDto)
+                .build();
+
+        return cardListResponseDto;
     }
 }

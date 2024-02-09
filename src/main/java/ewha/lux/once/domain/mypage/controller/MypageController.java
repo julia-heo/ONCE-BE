@@ -38,4 +38,14 @@ public class MypageController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] 카드 목록 조회
+    @GetMapping("/maincard")
+    public CommonResponse<?> cardList(@AuthenticationPrincipal UserAccount user) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.getCardList(user.getUsers()));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 }
