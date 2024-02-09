@@ -55,6 +55,15 @@ public class MypageController {
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
+    }
 
+    // [Delete] 등록 카드 삭제
+    @DeleteMapping("/maincard/{ownedCardId}")
+    public CommonResponse<?> deleteCard(@AuthenticationPrincipal UserAccount user, @PathVariable("ownedCardId") Long ownedCardId) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, mypageService.deleteUserCard(user.getUsers(), ownedCardId));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
     }
 }

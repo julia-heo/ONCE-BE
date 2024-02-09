@@ -134,7 +134,7 @@ public class MypageService {
 
     @Transactional
     public String patchReleaseMaincard(Users nowUser, Long ownedCardId) throws CustomException {
-        OwnedCard ownedCard = ownedCardRepository.findById(ownedCardId).orElse(null);
+        OwnedCard ownedCard = ownedCardRepository.findOwnedcardById(ownedCardId);
 
         // 주카드가 아닌 경우
         if (!ownedCard.isMain()) {
@@ -144,5 +144,13 @@ public class MypageService {
         ownedCard.releaseMaincard();
 
         return ResponseCode.RELEASE_MAINCARD_SUCCESS.getMessage();
+    }
+
+    @Transactional
+    public String deleteUserCard(Users users, Long ownedCardId) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findOwnedcardById(ownedCardId);
+        ownedCardRepository.delete(ownedCard);
+
+        return ResponseCode.DELETE_CARD_SUCCESS.getMessage();
     }
 }
