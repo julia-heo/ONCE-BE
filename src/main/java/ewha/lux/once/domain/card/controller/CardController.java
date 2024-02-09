@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.card.controller;
 
+import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
 import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.service.CardService;
 import ewha.lux.once.global.common.CommonResponse;
@@ -36,6 +37,29 @@ public class CardController {
     public CommonResponse<?> cardPerformance(@AuthenticationPrincipal UserAccount user, @RequestBody CardPerformanceRequestDto cardPerformanceRequestDto) {
         try {
             cardService.postCardPerformance(user.getUsers(), cardPerformanceRequestDto);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Get] 월별 혜택 조회
+    @GetMapping("/benefit")
+    @ResponseBody
+    public CommonResponse<?> montlyBenefitInfo(@AuthenticationPrincipal UserAccount user, @RequestParam int month) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, cardService.getMontlyBenefitInfo(user.getUsers(), month));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Post] 카드 목표 혜택 금액 입력
+    @PostMapping("/benefitgoal")
+    @ResponseBody
+    public CommonResponse<?> cardGoal(@AuthenticationPrincipal UserAccount user, @RequestBody CardGoalRequestDto cardGoalRequestDto) {
+        try {
+            cardService.postBenefitGoal(user.getUsers(), cardGoalRequestDto);
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());

@@ -103,4 +103,5 @@ public class Users extends BaseEntity implements UserDetails {
         this.password = password;
     }
 
+    public void setCardGoal(int goal) {this.benefitGoal = goal;}
 }
