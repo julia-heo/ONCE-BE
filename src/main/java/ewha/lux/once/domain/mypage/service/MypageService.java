@@ -134,22 +134,31 @@ public class MypageService {
 
     @Transactional
     public String patchReleaseMaincard(Users nowUser, Long ownedCardId) throws CustomException {
-        OwnedCard ownedCard = ownedCardRepository.findOwnedcardById(ownedCardId);
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByIdAndUsers(ownedCardId, nowUser);
 
-        // 주카드가 아닌 경우
-        if (!ownedCard.isMain()) {
-            throw new CustomException(ResponseCode.INVALID_MAINCARD);
+        if (ownedCard != null) {
+            // 주카드가 아닌 경우
+            if (!ownedCard.isMain()) {
+                throw new CustomException(ResponseCode.INVALID_MAINCARD);
+            }
+
+            ownedCard.releaseMaincard();
+        } else {
+            throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
         }
-
-        ownedCard.releaseMaincard();
 
         return ResponseCode.RELEASE_MAINCARD_SUCCESS.getMessage();
     }
 
     @Transactional
-    public String deleteUserCard(Users users, Long ownedCardId) throws CustomException {
-        OwnedCard ownedCard = ownedCardRepository.findOwnedcardById(ownedCardId);
-        ownedCardRepository.delete(ownedCard);
+    public String deleteUserCard(Users nowUser, Long ownedCardId) throws CustomException {
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByIdAndUsers(ownedCardId, nowUser);
+
+        if (ownedCard != null) {
+            ownedCardRepository.delete(ownedCard);
+        } else {
+            throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
+        }
 
         return ResponseCode.DELETE_CARD_SUCCESS.getMessage();
     }
