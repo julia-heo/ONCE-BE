@@ -2,6 +2,8 @@ package ewha.lux.once.global.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ewha.lux.once.domain.user.dto.LoginResponseDto;
+import ewha.lux.once.domain.user.service.RedisService;
+import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.UserAccount;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.ResponseDto;
@@ -28,6 +30,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
     public static final String HEADER_KEY = "Authorization";
     public static final String REFRESH_HEADER_KEY = "Authorization-refresh";
     public static final String PREFIX = "Bearer ";
@@ -37,12 +40,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String accessToken = resolveToken(request, HEADER_KEY);
+        String refreshToken = resolveToken(request, REFRESH_HEADER_KEY);
+
         // 자동 로그인 요청인 경우
         if(request.getRequestURI().equals("/user/auto")) {
-
-            String accessToken = resolveToken(request, HEADER_KEY);
-            String refreshToken = resolveToken(request, REFRESH_HEADER_KEY);
-
+            if ("Deprecated".equals(redisService.getValue(refreshToken))) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("utf-8");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "refresh token이 만료되었습니다. 다시 로그인해주세요"))));
+                return;
+            }
+            // 토큰 유효성 검사
             if (!jwtProvider.validateAccessTokenExpiration(accessToken)) { // accesstoken이 유효한 경우
                 Users users = jwtProvider.validateTokenAndGetUsers(accessToken);
                 LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
@@ -50,7 +60,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("utf-8");
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,true, "access token이 검증되었습니다.", loginResponseDto))));
+                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "access token이 검증되었습니다.", loginResponseDto))));
                 return;
             } else if (!jwtProvider.validateAccessTokenExpiration(refreshToken)) { // accesstoken 만료, refreshtoken이 유효한 경우
                 Users users = jwtProvider.validateTokenAndGetUsers(refreshToken);
@@ -70,9 +80,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
-        String accessToken = resolveToken(request, HEADER_KEY);
-
         if(StringUtils.hasText(accessToken) && jwtProvider.validateToken(accessToken)){
             Users users = jwtProvider.validateTokenAndGetUsers(accessToken);
 
@@ -80,9 +87,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
-
-
         filterChain.doFilter(request, response);
     }
     public void saveAuthentication(Users users) {

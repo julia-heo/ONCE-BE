@@ -12,6 +12,7 @@ import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

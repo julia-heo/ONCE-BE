@@ -2,6 +2,7 @@ package ewha.lux.once.domain.user.controller;
 
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
+import ewha.lux.once.domain.user.service.RedisService;
 import ewha.lux.once.domain.user.service.UserService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 @RestController
@@ -27,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final RedisService redisService;
 
     // [Post] 회원가입
     @PostMapping("/signup")
@@ -38,6 +41,7 @@ public class UserController {
             String refreshToken = jwtProvider.generateRefreshToken(users.getLoginId());
 
             LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
+            redisService.setValueWithTTL(refreshToken, users.getId().toString(), 14L, TimeUnit.DAYS);
             return new CommonResponse<>(ResponseCode.SUCCESS, loginResponseDto);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
@@ -54,7 +58,7 @@ public class UserController {
             String refreshToken = jwtProvider.generateRefreshToken(user.getLoginId());
 
             LoginResponseDto loginResponseDto = new LoginResponseDto(user.getId(), accessToken, refreshToken);
-
+            redisService.setValueWithTTL(refreshToken, user.getId().toString(), 14L, TimeUnit.DAYS);
             return new CommonResponse<>(ResponseCode.SUCCESS, loginResponseDto);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
