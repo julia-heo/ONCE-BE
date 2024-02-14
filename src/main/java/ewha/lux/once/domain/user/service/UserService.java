@@ -11,6 +11,9 @@ import ewha.lux.once.global.repository.CardCompanyRepository;
 import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import ewha.lux.once.global.repository.UsersRepository;
+import ewha.lux.once.global.security.JwtAuthFilter;
+import ewha.lux.once.global.security.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,9 +43,12 @@ public class UserService implements UserDetailsService {
     private final CardRepository cardRepository;
     private final CardCompanyRepository cardCompanyRepository;
     private final OwnedCardRepository ownedCardRepository;
+    private final JwtProvider jwtProvider;
     private final S3Uploader s3Uploader;
+    private final RedisTemplate redisTemplate;
+    private final RedisService redisService;
 
-    public Users signup(SignupRequestDto request) throws CustomException, ParseException {
+    public LoginResponseDto signup(SignupRequestDto request) throws CustomException, ParseException {
         String loginId = request.getLoginId();
         String username =  request.getUsername();
         String password = request.getPassword();
@@ -77,10 +84,18 @@ public class UserService implements UserDetailsService {
             usersBuilder.birthday(birthday);
         }
 
-        return usersRepository.save(usersBuilder.benefitGoal(100000).build());
+        Users newUser = usersRepository.save(usersBuilder.benefitGoal(100000).build());
+
+        String accessToken = jwtProvider.generateAccessToken(newUser.getLoginId());
+        String refreshToken = jwtProvider.generateRefreshToken(newUser.getLoginId());
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto(newUser.getId(), accessToken, refreshToken);
+        redisService.setValueWithTTL(refreshToken, newUser.getId().toString(), 14L, TimeUnit.DAYS);
+
+        return loginResponseDto;
     }
 
-    public Users authenticate(SignInRequestDto request) throws CustomException {
+    public LoginResponseDto authenticate(SignInRequestDto request) throws CustomException {
         String loginId = request.getLoginId();
         String password = request.getPassword();
 
@@ -93,7 +108,19 @@ public class UserService implements UserDetailsService {
 
         users.setLastLogin();
         usersRepository.save(users);
-        return users;
+
+        String accessToken = jwtProvider.generateAccessToken(users.getLoginId());
+        String refreshToken = jwtProvider.generateRefreshToken(users.getLoginId());
+        LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
+        redisService.setValueWithTTL(refreshToken, users.getId().toString(), 14L, TimeUnit.DAYS);
+
+        return loginResponseDto;
+    }
+
+    public void postLogout(Users nowUser, HttpServletRequest request) throws CustomException {
+        String token = jwtProvider.resolveAccessToken(request);
+        Long expiration = jwtProvider.getExpiration(token);
+        redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.MILLISECONDS);
     }
 
     public void deleteUsers(Users nowUser) throws CustomException {

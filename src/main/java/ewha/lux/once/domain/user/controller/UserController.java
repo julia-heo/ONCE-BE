@@ -1,14 +1,12 @@
 package ewha.lux.once.domain.user.controller;
 
 import ewha.lux.once.domain.user.dto.*;
-import ewha.lux.once.domain.user.entity.Users;
-import ewha.lux.once.domain.user.service.RedisService;
 import ewha.lux.once.domain.user.service.UserService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.common.UserAccount;
-import ewha.lux.once.global.security.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
@@ -19,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 @RestController
@@ -28,21 +25,12 @@ import java.util.concurrent.TimeUnit;
 public class UserController {
 
     private final UserService userService;
-    private final JwtProvider jwtProvider;
-    private final RedisService redisService;
 
     // [Post] 회원가입
     @PostMapping("/signup")
     public CommonResponse<?> signup(@RequestBody SignupRequestDto request) throws ParseException {
         try {
-            Users users = userService.signup(request);
-
-            String accessToken = jwtProvider.generateAccessToken(users.getLoginId());
-            String refreshToken = jwtProvider.generateRefreshToken(users.getLoginId());
-
-            LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
-            redisService.setValueWithTTL(refreshToken, users.getId().toString(), 14L, TimeUnit.DAYS);
-            return new CommonResponse<>(ResponseCode.SUCCESS, loginResponseDto);
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.signup(request));
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
@@ -52,14 +40,18 @@ public class UserController {
     @PostMapping("/login")
     public CommonResponse<?> signin(@RequestBody SignInRequestDto request) {
         try {
-            Users user = userService.authenticate(request);
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.authenticate(request));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 
-            String accessToken = jwtProvider.generateAccessToken(user.getLoginId());
-            String refreshToken = jwtProvider.generateRefreshToken(user.getLoginId());
-
-            LoginResponseDto loginResponseDto = new LoginResponseDto(user.getId(), accessToken, refreshToken);
-            redisService.setValueWithTTL(refreshToken, user.getId().toString(), 14L, TimeUnit.DAYS);
-            return new CommonResponse<>(ResponseCode.SUCCESS, loginResponseDto);
+    // [Post] 로그아웃
+    @PostMapping("/logout")
+    public CommonResponse<?> logout(HttpServletRequest request, @AuthenticationPrincipal UserAccount userAccount) {
+        try {
+            userService.postLogout(userAccount.getUsers(), request);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }

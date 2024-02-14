@@ -4,11 +4,13 @@ import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.repository.UsersRepository;
 import ewha.lux.once.domain.user.service.UserService;
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -17,8 +19,9 @@ import java.util.*;
 public class JwtProvider {
     private static final long ACCESS_EXPIRE_TIME = 1000l * 60 * 60 * 2; // 2시간
     private static final long REFRESH_EXPIRE_TIME = 1000l * 60 * 60 * 24 * 14; // 2주
-    private final UserService userService;
     private final UsersRepository usersRepository;
+    public static final String TOKEN_PREFIX = "Bearer ";
+    public static final String HEADER_STRING = "Authorization";
 
     @Getter
     @Value("${spring.jwt.secret}")
@@ -95,5 +98,18 @@ public class JwtProvider {
         }
     }
 
+    // accessToken 값 가져오기
+    public String resolveAccessToken(HttpServletRequest request) {
+        String token = request.getHeader(JwtProvider.HEADER_STRING);
+        if (StringUtils.hasText(token) && token.startsWith(JwtProvider.TOKEN_PREFIX)) {
+            return token.replace(JwtProvider.TOKEN_PREFIX, "");
+        }
+        return null;
+    }
 
+    // accessToken 만료 시간 반환
+    public Long getExpiration(String token) {
+        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        return claims.getExpiration().getTime();
+    }
 }
