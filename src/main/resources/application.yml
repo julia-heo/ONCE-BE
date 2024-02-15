@@ -27,3 +27,14 @@ spring:
         auto: false
       stack:
         auto: false
+
+gemini:
+  api:
+    url: ${GEMINI_URL}
+    key: ${GEMINI_KEY}
+
+openai:
+  model: ${OPENAI_MODEL}
+  api:
+    url: https://api.openai.com/v1/chat/completions
+    key: ${OPENAI_KEY}
