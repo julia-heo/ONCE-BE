@@ -28,13 +28,15 @@ public class HomeService {
     private final AnnouncementRepository announcementRepository;
 
     private final GeminiService geminiService;
+    private final OpenaiService openaiService;
 
     public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
 
         // 1. Gemini 사용하는 경우
         String response = geminiService.gemini(nowUser, keyword, paymentAmount);
 
-
+        // 2. GPT 사용하는 경우
+//        String response = openaiService.gpt(nowUser, keyword, paymentAmount);
         String[] results = response.split(",");
 
         Long cardId = Long.valueOf(results[0].trim());

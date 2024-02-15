@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ResponseCode {
     /*
-    1000 : Request 성공
+        1000 : Request 성공
     */
     SUCCESS(1000, true, "요청에 성공하였습니다."),
     CHANGE_PW_SUCCESS(1001, true, "비밀 번호 수정을 성공했습니다."),
@@ -42,6 +42,7 @@ public enum ResponseCode {
 
     // 3300~ : 챗봇 관련 오류
     FAILED_TO_GEMINI(3300, false, "요청 과정에서 오류가 발생했습니다."),
+    FAILED_TO_OPENAI(3301, false, "요청 과정에서 오류가 발생했습니다."),
 
     // =====================================
 
