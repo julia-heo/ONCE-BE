@@ -40,6 +40,8 @@ public enum ResponseCode {
     CHAT_HISTORY_NOT_FOUND(3200, false, "채팅이 존재하지 않습니다."),
 
 
+    // 3300~ : 챗봇 관련 오류
+    FAILED_TO_GEMINI(3300, false, "요청 과정에서 오류가 발생했습니다."),
 
     // =====================================
 
