@@ -27,6 +27,17 @@ spring:
         auto: false
       stack:
         auto: false
+  encrypt:
+    key: ${AES_ENCRYPTION_KEY}
+
+codef:
+  access-token: ${ACCESS_TOKEN}
+  client-id: ${CLIENT_ID}
+  seceret-key: ${SECERET_KEY}
+  public-key: ${PUBLIC_KEY}
+
+google-map:
+  api-key: ${GOOGLE_CLOUD_API_KEY}
 
 gemini:
   api:

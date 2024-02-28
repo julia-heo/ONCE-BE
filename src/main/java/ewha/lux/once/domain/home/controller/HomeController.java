@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.home.controller;
 
+import ewha.lux.once.domain.home.service.FirebaseCloudMessageService;
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class HomeController {
 
     private final HomeService homeService;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
 
     // [Get] 챗봇 카드 추천
     @GetMapping()
@@ -67,8 +69,17 @@ public class HomeController {
         } catch (CustomException e){
             return new CommonResponse<>(e.getStatus());
         }
-
     }
 
+    // [Post] Subscription 등록
+    @PostMapping("/sub")
+    public CommonResponse<?> subscribe(@AuthenticationPrincipal UserAccount userAccount,@RequestBody String token) {
+        try {
+            firebaseCloudMessageService.saveSubscription(userAccount.getUsers(), token);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 
 }

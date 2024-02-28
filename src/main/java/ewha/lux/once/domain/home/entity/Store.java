@@ -24,9 +24,9 @@ public class Store extends BaseEntity {
     private String address;
 
     @Column(name = "x")
-    private float x;
+    private double x;
 
     @Column(name = "y")
-    private float y;
+    private double y;
 
 }

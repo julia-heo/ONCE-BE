@@ -3,6 +3,7 @@ package ewha.lux.once.domain.card.controller;
 import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
 import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.service.CardService;
+import ewha.lux.once.domain.card.dto.MainCardRequestDto;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
@@ -60,6 +61,18 @@ public class CardController {
     public CommonResponse<?> cardGoal(@AuthenticationPrincipal UserAccount user, @RequestBody CardGoalRequestDto cardGoalRequestDto) {
         try {
             cardService.postBenefitGoal(user.getUsers(), cardGoalRequestDto);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Post] 주카드 등록
+    @PostMapping("/main")
+    @ResponseBody
+    public CommonResponse<?> registerMainCard (@AuthenticationPrincipal UserAccount user, @RequestBody MainCardRequestDto mainCardRequestDto) {
+        try {
+            cardService.postRegisterCard(user.getUsers(), mainCardRequestDto);
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
