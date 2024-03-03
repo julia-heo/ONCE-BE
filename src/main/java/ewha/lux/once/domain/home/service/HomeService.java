@@ -15,7 +15,8 @@ import ewha.lux.once.global.repository.OwnedCardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -185,29 +186,29 @@ public class HomeService {
     public AnnounceListDto getAnnounce(Users nowUser) throws CustomException {
         String nickname = nowUser.getNickname();
 
-        LocalDate today = LocalDate.now();
-        LocalDate thisWeek = today.minusDays(7);
+        LocalDateTime today = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDateTime();
+        LocalDateTime thisWeek = today.minusDays(7);
 
         List<Announcement> announcementList = announcementRepository.findAnnouncementByUsers(nowUser);
 
         // 오늘 생성된 알림
         List<AnnounceDto> todayAnnounceDto = announcementList.stream()
-                .filter(announcement -> announcement.getCreatedAt().toLocalDate().isEqual(today))
+                .filter(announcement -> announcement.getCreatedAt().isEqual(today))
                 .sorted(Comparator.comparing(Announcement::getCreatedAt).reversed())
                 .map(AnnounceDto::new)
                 .collect(Collectors.toList());
 
         // 7일 이내에 생성된 알림 (오늘 제외)
         List<AnnounceDto> recentAnnounceDto = announcementList.stream()
-                .filter(announcement -> !announcement.getCreatedAt().toLocalDate().isEqual(today)
-                        && announcement.getCreatedAt().toLocalDate().isAfter(thisWeek))
+                .filter(announcement -> !announcement.getCreatedAt().isEqual(today)
+                        && announcement.getCreatedAt().isAfter(thisWeek))
                 .sorted(Comparator.comparing(Announcement::getCreatedAt).reversed())
                 .map(AnnounceDto::new)
                 .collect(Collectors.toList());
 
         long uncheckedcnt = announcementList.stream()
                 .filter(announcement -> !announcement.isHasCheck()
-                        && announcement.getCreatedAt().toLocalDate().isAfter(thisWeek))
+                        && announcement.getCreatedAt().isAfter(thisWeek))
                 .count();
 
         return new AnnounceListDto(nickname, uncheckedcnt, todayAnnounceDto, recentAnnounceDto);
