@@ -1,17 +1,17 @@
 package ewha.lux.once.domain.home.service;
 
-import ewha.lux.once.domain.home.dto.*;
 import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.home.dto.*;
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
-import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.AnnouncementRepository;
+import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
-import ewha.lux.once.domain.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class HomeService {
+
     private final CardRepository cardRepository;
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
@@ -30,6 +31,7 @@ public class HomeService {
     private final GeminiService geminiService;
     private final OpenaiService openaiService;
 
+    // 챗봇 카드 추천
     public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
 
         // 1. Gemini 사용하는 경우
@@ -123,6 +125,7 @@ public class HomeService {
         return "기타";
     }
 
+    // 홈 화면 기본정보 조회
     public HomeDto getHome(Users nowUser) throws CustomException {
         // 사용자별 맞춤형 키워드 조회
         List<ChatHistory> allChatHistory = chatHistoryRepository.findByUsers(nowUser);
@@ -138,35 +141,37 @@ public class HomeService {
                 .limit(3) // 상위 3개 키워드
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-        List<String> defaultKeywords = List.of("배달의 민족", "스타벅스","GS25"); // 고정 키워드
+        List<String> defaultKeywords = List.of("배달의 민족", "스타벅스", "GS25"); // 고정 키워드
         while (topKeywords.size() < 3) {
             topKeywords.add(defaultKeywords.get(topKeywords.size()));
         }
 
-        return new HomeDto(nowUser.getNickname(),topKeywords);
+        return new HomeDto(nowUser.getNickname(), topKeywords);
 
     }
+
+    // 결제 여부 변경
     public void getPayCardHistory(Users nowUser, Long chatId) throws CustomException {
         Optional<ChatHistory> optionalChatHistory = chatHistoryRepository.findById(chatId);
-        ChatHistory chatHistory = optionalChatHistory.orElseThrow(() ->  new CustomException(ResponseCode.CHAT_HISTORY_NOT_FOUND));
+        ChatHistory chatHistory = optionalChatHistory.orElseThrow(() -> new CustomException(ResponseCode.CHAT_HISTORY_NOT_FOUND));
         int paymentAmount = chatHistory.getPaymentAmount();
 
         String cardName = chatHistory.getCardName();
         Optional<Card> optionalCard = cardRepository.findByName(cardName);
         Card card = optionalCard.orElseThrow(() -> new CustomException(ResponseCode.CARD_NOT_FOUND));
-        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardAndUsers(card,nowUser);
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardAndUsers(card, nowUser);
         boolean isMain = ownedCard.isMain(); // 주카드인 경우 실제 실적을 불러옴
 
 
-        if(chatHistory.isHasPaid()==true){
+        if (chatHistory.isHasPaid() == true) {
             chatHistory.setHasPaid(false);
-            if(isMain==false) {
-                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()-paymentAmount);
+            if (isMain == false) {
+                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance() - paymentAmount);
             }
         } else {
             chatHistory.setHasPaid(true);
-            if(isMain==false) {
-                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance()+paymentAmount);
+            if (isMain == false) {
+                ownedCard.setCurrentPerformance(ownedCard.getCurrentPerformance() + paymentAmount);
             }
         }
 
@@ -176,7 +181,10 @@ public class HomeService {
         return;
     }
 
-    public AnnouncListDto getAnnounce(Users nowUser) throws CustomException {
+    // 알림 리스트 조회
+    public AnnounceListDto getAnnounce(Users nowUser) throws CustomException {
+        String nickname = nowUser.getNickname();
+
         LocalDate today = LocalDate.now();
         LocalDate thisWeek = today.minusDays(7);
 
@@ -202,8 +210,10 @@ public class HomeService {
                         && announcement.getCreatedAt().toLocalDate().isAfter(thisWeek))
                 .count();
 
-        return new AnnouncListDto(uncheckedcnt,todayAnnounceDto,recentAnnounceDto);
+        return new AnnounceListDto(nickname, uncheckedcnt, todayAnnounceDto, recentAnnounceDto);
     }
+
+    // 알림 상세 조회
     public AnnounceDetailDto getAnnounceDetail(Long announceId) throws CustomException {
         Optional<Announcement> optionalAnnouncement = announcementRepository.findById(announceId);
         Announcement announcement = optionalAnnouncement.orElseThrow(() -> new CustomException(ResponseCode.ANNOUNCEMENT_NOT_FOUND));
