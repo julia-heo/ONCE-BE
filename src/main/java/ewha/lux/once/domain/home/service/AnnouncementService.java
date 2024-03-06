@@ -4,8 +4,8 @@ import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.AnnouncementRequestDto;
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
-import ewha.lux.once.domain.home.entity.Subscription;
-import ewha.lux.once.global.repository.SubscriptionRepository;
+import ewha.lux.once.domain.home.entity.FCMToken;
+import ewha.lux.once.global.repository.FCMTokenRepository;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.repository.AnnouncementRepository;
@@ -30,7 +30,7 @@ public class AnnouncementService {
     private final AnnouncementRepository announcementRepository;
 
     private final FirebaseCloudMessageService firebaseCloudMessageService;
-    private final SubscriptionRepository subscriptionRepository;
+    private final FCMTokenRepository fcmTokenRepository;
     private final OwnedCardRepository ownedCardRepository;
     private final CODEFAPIService codefapi;
 
@@ -75,9 +75,9 @@ public class AnnouncementService {
                     .build();
             announcementRepository.save(announcement);
 
-            List<Subscription> subscriptions = subscriptionRepository.findAllByUsers(users);
-            for ( Subscription subscription : subscriptions ){
-                String token = subscription.getToken();
+            List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
+            for ( FCMToken fcmToken : fcmTokens){
+                String token = fcmToken.getToken();
                 firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"ONCE",content));
             }
         }
@@ -108,12 +108,23 @@ public class AnnouncementService {
                     .hasCheck(false)
                     .build();
             announcementRepository.save(announcement);
-            List<Subscription> subscriptions = subscriptionRepository.findAllByUsers(users);
-            for ( Subscription subscription : subscriptions ){
-                String token = subscription.getToken();
+            List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
+            for ( FCMToken fcmToken : fcmTokens){
+                String token = fcmToken.getToken();
                 firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"ONCE",content));
             }
 
         }
     }
+
+    // 매달 주카드 아닌 보유카드 실적 초기화
+    @Scheduled(cron = "0 0 0 1 * ?")
+    public void resetNonMainOwnedCardPerformance() throws CustomException {
+        List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByIsMain(false);
+        for (OwnedCard card : ownedCardList) {
+            card.setCurrentPerformance(0);
+            ownedCardRepository.save(card);
+        }
+    }
+
 }
