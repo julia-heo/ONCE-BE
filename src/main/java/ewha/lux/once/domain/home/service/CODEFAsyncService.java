@@ -9,6 +9,7 @@ import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.FavoriteRepository;
+import ewha.lux.once.global.repository.OwnedCardRepository;
 import ewha.lux.once.global.repository.StoreRepository;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class CODEFAsyncService {
     private final FavoriteRepository favoriteRepository;
     private final UsersRepository usersRepository;
     private final RestTemplate restTemplate;
+    private final OwnedCardRepository ownedCardRepository;
     @Async
     public void saveFavorite(String code, String connectedId, OwnedCard ownedCard, Users nowUser, String cardNo) throws CustomException {
         // 승인 내역 조회 -> 단골 가게 카드별 5개
@@ -135,6 +137,24 @@ public class CODEFAsyncService {
 
         } catch (Exception e){
             throw new CustomException(ResponseCode.CODEF_GET_CARD_PERFORMANCE_FAIL);
+        }
+    }
+    @Async
+    public void updateOwnedCardsPerformanceCodef(Users nowUser)throws CustomException {
+        List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
+        for (OwnedCard card : ownedCards) {
+
+            if(card.isMain()==true) {
+                // 실적 업데이트
+                HashMap<String,Object> performResult = codefapi.Performace(card.getCard().getCardCompany().getCode(), nowUser.getConnectedId(), card.getCard().getName());
+
+                int performanceCondition = (int) performResult.get("performanceCondition");
+                int currentPerformance = (int) performResult.get("currentPerformance");
+                card.setPerformanceCondition(performanceCondition);
+                card.setCurrentPerformance(currentPerformance);
+
+                ownedCardRepository.save(card);
+            }
         }
     }
 }

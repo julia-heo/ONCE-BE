@@ -78,4 +78,16 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] 주카드 실적 업데이트
+    @GetMapping("/main/performance")
+    @ResponseBody
+    public CommonResponse<?> registerMainCard (@AuthenticationPrincipal UserAccount user) {
+        try {
+            cardService.updateOwnedCardsPerformance(user.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 }

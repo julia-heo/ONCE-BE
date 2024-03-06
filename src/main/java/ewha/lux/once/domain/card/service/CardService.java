@@ -167,21 +167,7 @@ public class CardService {
     }
     // 보유 주카드 실적 업데이트
     public void updateOwnedCardsPerformance(Users nowUser) throws CustomException {
-        List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
-        for (OwnedCard card : ownedCards) {
-
-            if(card.isMain()==true) {
-                // 실적 업데이트
-                HashMap<String,Object> performResult = codefapi.Performace(card.getCard().getCardCompany().getCode(), nowUser.getConnectedId(), card.getCard().getName());
-
-                int performanceCondition = (int) performResult.get("performanceCondition");
-                int currentPerformance = (int) performResult.get("currentPerformance");
-                card.setPerformanceCondition(performanceCondition);
-                card.setCurrentPerformance(currentPerformance);
-
-                ownedCardRepository.save(card);
-            }
-        }
+        codefAsyncService.updateOwnedCardsPerformanceCodef(nowUser);
     }
 
 }
