@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="subscriptions")
-public class Subscription {
+public class FCMToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -5,10 +5,10 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import ewha.lux.once.domain.home.dto.AnnouncementRequestDto;
-import ewha.lux.once.domain.home.entity.Subscription;
+import ewha.lux.once.domain.home.entity.FCMToken;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.repository.SubscriptionRepository;
+import ewha.lux.once.global.repository.FCMTokenRepository;
 import ewha.lux.once.domain.user.entity.Users;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FirebaseCloudMessageService {
     private final FirebaseMessaging firebaseMessaging;
-    private final SubscriptionRepository subscriptionRepository;
+    private final FCMTokenRepository fcmTokenRepository;
     public void sendNotification (AnnouncementRequestDto requestDTO) throws CustomException {
         Notification notification = Notification.builder()
                 .setTitle(requestDTO.getTitle())
@@ -39,11 +39,11 @@ public class FirebaseCloudMessageService {
     }
 
     public void saveSubscription (Users users, String token) throws CustomException {
-        Subscription subscription = Subscription.builder()
+        FCMToken fcmToken = FCMToken.builder()
                 .users(users)
                 .token(token)
                 .build();
-        subscriptionRepository.save(subscription);
+        fcmTokenRepository.save(fcmToken);
     }
 
 }

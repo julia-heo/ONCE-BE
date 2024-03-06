@@ -1,5 +1,7 @@
 package ewha.lux.once.domain.home.controller;
 
+import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
+import ewha.lux.once.domain.home.dto.FCMTokenDto;
 import ewha.lux.once.domain.home.service.FirebaseCloudMessageService;
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
@@ -73,9 +75,9 @@ public class HomeController {
 
     // [Post] Subscription 등록
     @PostMapping("/sub")
-    public CommonResponse<?> subscribe(@AuthenticationPrincipal UserAccount userAccount,@RequestBody String token) {
+    public CommonResponse<?> subscribe(@AuthenticationPrincipal UserAccount userAccount,@RequestBody FCMTokenDto fcmTokenDto) {
         try {
-            firebaseCloudMessageService.saveSubscription(userAccount.getUsers(), token);
+            firebaseCloudMessageService.saveSubscription(userAccount.getUsers(), fcmTokenDto.getToken());
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
