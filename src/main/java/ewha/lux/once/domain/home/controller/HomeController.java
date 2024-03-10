@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 public class HomeController {
 
     private final HomeService homeService;
-    private final FirebaseCloudMessageService firebaseCloudMessageService;
 
     // [Get] 챗봇 카드 추천
     @GetMapping()
@@ -69,17 +68,6 @@ public class HomeController {
         try {
             return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
         } catch (CustomException e){
-            return new CommonResponse<>(e.getStatus());
-        }
-    }
-
-    // [Post] Subscription 등록
-    @PostMapping("/sub")
-    public CommonResponse<?> subscribe(@AuthenticationPrincipal UserAccount userAccount,@RequestBody FCMTokenDto fcmTokenDto) {
-        try {
-            firebaseCloudMessageService.saveSubscription(userAccount.getUsers(), fcmTokenDto.getToken());
-            return new CommonResponse<>(ResponseCode.SUCCESS);
-        } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
     }

@@ -38,7 +38,7 @@ public class FirebaseCloudMessageService {
         }
     }
 
-    public void saveSubscription (Users users, String token) throws CustomException {
+    public void postFCMToken (Users users, String token) throws CustomException {
         FCMToken fcmToken = FCMToken.builder()
                 .users(users)
                 .token(token)

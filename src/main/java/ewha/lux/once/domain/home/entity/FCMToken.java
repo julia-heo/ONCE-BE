@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="subscriptions")
+@Table(name="FCMToken")
 public class FCMToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
