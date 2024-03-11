@@ -2,6 +2,7 @@ package ewha.lux.once.domain.card.controller;
 
 import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
 import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
+import ewha.lux.once.domain.card.dto.CodefCardListRequestDto;
 import ewha.lux.once.domain.card.service.CardService;
 import ewha.lux.once.domain.card.dto.MainCardRequestDto;
 import ewha.lux.once.global.common.CommonResponse;
@@ -62,6 +63,16 @@ public class CardController {
         try {
             cardService.postBenefitGoal(user.getUsers(), cardGoalRequestDto);
             return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+    // [Get] CODEF 보유 카드 조회
+    @GetMapping("/list")
+    @ResponseBody
+    public CommonResponse<?> codefCardList (@AuthenticationPrincipal UserAccount user, @RequestBody CodefCardListRequestDto codefCardListRequestDto) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS,cardService.getCodefCardList(user.getUsers(), codefCardListRequestDto));
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }

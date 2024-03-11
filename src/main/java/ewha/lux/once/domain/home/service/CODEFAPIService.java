@@ -2,7 +2,7 @@ package ewha.lux.once.domain.home.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ewha.lux.once.domain.card.dto.MainCardRequestDto;
+import ewha.lux.once.domain.card.dto.CodefCardListRequestDto;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.CODEF.ApiRequest;
 import ewha.lux.once.global.CODEF.CommonConstant;
@@ -105,7 +105,7 @@ public class CODEFAPIService {
     }
 
     // 계정 생성
-    public String CreateConnectedID(MainCardRequestDto cardInfo) throws CustomException {
+    public String CreateConnectedID(CodefCardListRequestDto cardInfo) throws CustomException {
         try {
             String urlPath = CommonConstant.TEST_DOMAIN+CommonConstant.CREATE_ACCOUNT;
 
@@ -140,7 +140,7 @@ public class CODEFAPIService {
     }
 
     // 계정 추가
-    public String AddToConnectedID(Users nowuser, MainCardRequestDto cardInfo) throws CustomException {
+    public String AddToConnectedID(Users nowuser, CodefCardListRequestDto cardInfo) throws CustomException {
         try {
             String urlPath = CommonConstant.TEST_DOMAIN+CommonConstant.ADD_ACCOUNT;
 
@@ -199,17 +199,18 @@ public class CODEFAPIService {
         }
     }
     // 보유 카드 조회
-    public JSONObject GetCardList(String code, String connectedId) throws CustomException {
+    public JSONArray GetCardList(String code, String connectedId) throws CustomException {
         try {
             String urlPath = CommonConstant.TEST_DOMAIN+CommonConstant.KR_CD_P_001;
 
             HashMap<String, Object> accountMap = new HashMap<String, Object>();
             accountMap.put("organization", code);
             accountMap.put("connectedId", connectedId);
+            accountMap.put("inquiryType", "1");
 
             JSONObject result = apiRequest.reqeust(urlPath, accountMap);
-
-            return result;
+            JSONArray dataArray = (JSONArray) result.get("data");
+            return dataArray;
         } catch (Exception e){
             throw new CustomException(ResponseCode.CODEF_GET_CARD_LIST_FAIL);
         }

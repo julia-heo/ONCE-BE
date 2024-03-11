@@ -5,13 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MainCardRequestDto {
+public class CodefCardListRequestDto {
     private String code;
-    private String cardName;
+    private String id;
+    private String password;
 
 }

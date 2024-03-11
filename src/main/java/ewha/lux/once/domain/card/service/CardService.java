@@ -1,15 +1,20 @@
 package ewha.lux.once.domain.card.service;
 
 import ewha.lux.once.domain.card.dto.*;
+import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
+import ewha.lux.once.global.repository.CardRepository;
 import ewha.lux.once.global.repository.ChatHistoryRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.stereotype.Service;
 import ewha.lux.once.domain.home.service.CODEFAPIService;
 import ewha.lux.once.domain.home.service.CODEFAsyncService;
@@ -26,6 +31,7 @@ public class CardService {
     private final UsersRepository usersRepository;
     private final CODEFAPIService codefapi;
     private final CODEFAsyncService codefAsyncService;
+    private final CardRepository cardRepository;
 
     public MyWalletResponseDto.MyWalletProfileDto getMyWalletInfo(Users nowUser) throws CustomException {
         List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
@@ -132,27 +138,54 @@ public class CardService {
         }
         return cardBenefitList;
     }
-    public void postRegisterCard(Users nowUser, MainCardRequestDto mainCardRequestDto) throws CustomException{
-        // 보유 카드 가져오기
-        Optional<OwnedCard> optionalOwnedCard = ownedCardRepository.findById(mainCardRequestDto.getOwnedCardId());
-        OwnedCard ownedCard = optionalOwnedCard.orElseThrow(() -> new CustomException(ResponseCode.INVALID_OWNED_CARD));
-
+    public List<CodefCardListResponseDto> getCodefCardList(Users nowUser,CodefCardListRequestDto codefCardListRequestDto) throws CustomException {
         // 커넥티드 아이디
         String connectedId;
         if(nowUser.getConnectedId() == null){  // 저장되어있지 않은 경우
             // 계정 생성
-            connectedId = codefapi.CreateConnectedID(mainCardRequestDto);
+            connectedId = codefapi.CreateConnectedID(codefCardListRequestDto);
             nowUser.setConnectedId(connectedId);
             usersRepository.save(nowUser);
-        } else if (codefapi.IsRegistered(mainCardRequestDto.getCode(),nowUser.getConnectedId())=="0"){  // 커넥티드 아이디가 해당 카드사와 연결되어있지 않은 경우
+        } else if (codefapi.IsRegistered(codefCardListRequestDto.getCode(),nowUser.getConnectedId())=="0"){  // 커넥티드 아이디가 해당 카드사와 연결되어있지 않은 경우
             // 계정 추가
-            connectedId = codefapi.AddToConnectedID(nowUser, mainCardRequestDto);
+            connectedId = codefapi.AddToConnectedID(nowUser, codefCardListRequestDto);
         } else {
             connectedId = nowUser.getConnectedId();
         }
+        JSONArray dataArray = codefapi.GetCardList(codefCardListRequestDto.getCode(), connectedId);
+
+        List<CodefCardListResponseDto> cardDTOList = new ArrayList<>();
+        for (Object obj : dataArray) {
+            JSONObject dataObject = (JSONObject) obj;
+            String resCardName = (String) dataObject.get("resCardName");
+            String resImageLink = (String) dataObject.get("resImageLink");
+
+            CodefCardListResponseDto cardDTO = new CodefCardListResponseDto(resCardName, resImageLink);
+            cardDTOList.add(cardDTO);
+        }
+        return cardDTOList;
+
+    }
+    public void postRegisterCard(Users nowUser, MainCardRequestDto mainCardRequestDto) throws CustomException{
+        // 카드
+        Optional<Card> optionalCard = cardRepository.findCardByName(mainCardRequestDto.getCardName());
+        Card card = optionalCard.orElseThrow(() -> new CustomException(ResponseCode.CARD_NOT_FOUND));
+        // 보유 카드 가져오기
+        Optional<OwnedCard> optionalOwnedCard = ownedCardRepository.findOwnedCardByUsersAndCard(nowUser, card);
+        OwnedCard ownedCard;
+        if (optionalOwnedCard.isPresent()) {
+            ownedCard = optionalOwnedCard.get();
+        } else {
+            ownedCard = OwnedCard.builder()
+                    .users(nowUser)
+                    .card(card)
+                    .build();
+        }
+
+        String connectedId = nowUser.getConnectedId();
 
         // 실적 조회
-        HashMap<String,Object> performResult = codefapi.Performace(mainCardRequestDto.getCode(),connectedId,ownedCard.getCard().getName());
+        HashMap<String,Object> performResult = codefapi.Performace(mainCardRequestDto.getCode(),connectedId,mainCardRequestDto.getCardName());
         int performanceCondition = (int) performResult.get("performanceCondition");
         int currentPerformance = (int) performResult.get("currentPerformance");
         String cardNo = (String) performResult.get("resCardNo");

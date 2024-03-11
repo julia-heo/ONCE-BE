@@ -97,7 +97,6 @@ public class CODEFAsyncService {
             nowUser.setConnectedId(null);
             usersRepository.save(nowUser);
         }
-        // 주카드에 해당하는 단골 가게만 찾아서 삭제
     }
     private HashMap<String,Object> searchStoreAddr (String textQuery) throws CustomException {
         try {

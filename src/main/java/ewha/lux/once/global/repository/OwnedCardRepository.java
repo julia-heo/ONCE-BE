@@ -6,6 +6,7 @@ import ewha.lux.once.domain.user.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OwnedCardRepository extends JpaRepository<OwnedCard, Long> {
     int countAllByUsers(Users users);
@@ -19,4 +20,6 @@ public interface OwnedCardRepository extends JpaRepository<OwnedCard, Long> {
     OwnedCard findOwnedCardByIdAndUsers(Long ownedCardId, Users nowUser);
 
     List<OwnedCard> findOwnedCardByIsMain(boolean isMain);
+
+    Optional<OwnedCard> findOwnedCardByUsersAndCard(Users users, Card card);
 }
