@@ -15,7 +15,9 @@ import org.springframework.stereotype.Component;
 public class ApiRequest {
 
     private static ObjectMapper mapper = new ObjectMapper();
+
     @Value("${codef.access-token}")
+    // redis의 토큰 가져오기
     private String ACCESS_TOKEN;
     @Value("${codef.client-id}")
     private String CLIENT_ID;

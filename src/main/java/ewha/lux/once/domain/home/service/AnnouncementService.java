@@ -127,4 +127,11 @@ public class AnnouncementService {
         }
     }
 
+    // 매주 월요일 4:00마다 CODEF 액세스 토큰 업데이트
+    @Scheduled(cron = "0 0 4 ? * 1")
+    public void updateCODEFACCESSTOKEN() throws CustomException {
+        String token = codefapi.publishToken();
+        // redis의 token 업데이트
+
+    }
 }
