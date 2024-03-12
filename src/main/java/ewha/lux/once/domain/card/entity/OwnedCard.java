@@ -39,4 +39,6 @@ public class OwnedCard extends BaseEntity {
     public void releaseMaincard() {
         this.isMain = false;
     }
+
+    public void setMaincard() { this.isMain = true; }
 }

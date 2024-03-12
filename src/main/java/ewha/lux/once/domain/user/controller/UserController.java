@@ -1,5 +1,7 @@
 package ewha.lux.once.domain.user.controller;
 
+import ewha.lux.once.domain.home.dto.FCMTokenDto;
+import ewha.lux.once.domain.home.service.FirebaseCloudMessageService;
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.domain.user.service.UserService;
@@ -27,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
 
     // [Post] 회원가입
     @PostMapping("/signup")
@@ -173,6 +176,18 @@ public class UserController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Post] FCM Token 등록
+    @PostMapping("/token")
+    public CommonResponse<?> saveFCMToken(@AuthenticationPrincipal UserAccount userAccount,@RequestBody FCMTokenDto fcmTokenDto) {
+        try {
+            firebaseCloudMessageService.postFCMToken(userAccount.getUsers(), fcmTokenDto.getToken());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
 }
 
 

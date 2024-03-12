@@ -2,6 +2,7 @@ package ewha.lux.once.domain.user.entity;
 
 import ewha.lux.once.domain.user.dto.EditUserInfoRequestDto;
 import ewha.lux.once.global.common.BaseEntity;
+import ewha.lux.once.global.common.ColumnEncryptor;
 import jakarta.persistence.*;
 
 import lombok.*;
@@ -56,6 +57,11 @@ public class Users extends BaseEntity implements UserDetails {
     @Column(name = "benefitGoal")
     private int benefitGoal;
 
+    @Column(name = "connectedId")
+    @Convert(converter = ColumnEncryptor.class)
+    private String connectedId;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -104,4 +110,6 @@ public class Users extends BaseEntity implements UserDetails {
     }
 
     public void setCardGoal(int goal) {this.benefitGoal = goal;}
+
+    public void setConnectedId(String connectedId) {this.connectedId = connectedId;}
 }

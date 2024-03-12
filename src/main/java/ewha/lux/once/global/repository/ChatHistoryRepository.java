@@ -13,4 +13,5 @@ public interface ChatHistoryRepository extends JpaRepository<ChatHistory, Long> 
     List<ChatHistory> findByUsers(Users users);
     List<ChatHistory> findByUsersAndHasPaidIsTrueAndCreatedAtBetween(Users nowUser, LocalDateTime startOfMonth, LocalDateTime endOfMonth);
     List<ChatHistory> findByUsersAndCreatedAtBetween(Users nowUser, LocalDateTime startDate, LocalDateTime endDate);
+    List<ChatHistory> findByUsersAndHasPaidTrue(Users nowUser);
 }

@@ -44,6 +44,21 @@ public enum ResponseCode {
     FAILED_TO_GEMINI(3300, false, "요청 과정에서 오류가 발생했습니다."),
     FAILED_TO_OPENAI(3301, false, "요청 과정에서 오류가 발생했습니다."),
 
+    // 3400~ : 알림 관련 오류
+    FCM_SEND_NOTIFICATION_FAIL(3400,false,"FCM 알림 전송에 실패하였습니다."),
+    AES_ENCRYPTION_ERROR(3401,false,"값을 암호화하는데 실패하였습니다."),
+    GOOGLE_MAP_SEARCH_PLACE_FAIL(3402,false,"Google Map 장소 검색에 실패하였습니다."),
+
+    // 3500~ : codef api 관련 오류
+    CODEF_REGISTRATION_STATUS_FAIL(3500,false,"CODEF API 등록 여부 확인에 실패하였습니다."),
+    CODEF_CONNECTEDID_CREATE_FAIL(3501,false,"CODEF API 커넥티드아이디-계정 등록에 실패하였습니다."),
+    CODEF_CONNECTEDID_ADD_FAIL(3502,false,"CODEF API 커넥티드아이디-계정 추가에 실패하였습니다."),
+    CODEF_GET_CARD_LIST_FAIL(3503,false,"CODEF API 보유 카드 조회에 실패하였습니다."),
+    CODEF_GET_CARD_PERFORMANCE_FAIL(3504,false,"CODEF API 카드 실적 조회에 실패하였습니다."),
+    CODEF_GET_APPROVAL_LIST_FAIL(3505,false,"CODEF API 카드 승인 내역 조회에 실패하였습니다."),
+    CODEF_DELETE_CONNECTEDID_FAIL(3506,false,"CODEF API 커넥티드아이디-계정 삭제 실패하였습니다."),
+    CODEF_CONNECTEDID_ACCOUNT_LIST_FAIL(3507,false,"CODEF API 계정 목록 조회에 실패하였습니다."),
+
     // =====================================
 
     // 그 외 오류
