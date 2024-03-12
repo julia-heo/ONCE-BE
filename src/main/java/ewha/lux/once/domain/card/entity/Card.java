@@ -30,6 +30,7 @@ public class Card extends BaseEntity {
     @Column(name = "benefits")
     private String benefits;
 
+    // 삭제해야 함
     @Column(name = "benefitSummary")
     private String benefitSummary;
 
