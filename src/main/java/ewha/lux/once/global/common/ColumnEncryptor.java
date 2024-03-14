@@ -40,6 +40,7 @@ public class ColumnEncryptor implements AttributeConverter<String, String> {
     @Override
     public String convertToEntityAttribute(String dbData) {
         try {
+            if (dbData == null) return null;
             return new String(decryptCipher.doFinal(Hex.decodeHex(dbData.toCharArray())));
         }catch (Exception e) {
             e.printStackTrace();
