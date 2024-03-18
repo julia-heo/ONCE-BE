@@ -41,3 +41,4 @@ out/
 ### Security ###
 application.properties
 once-firebase-adminsdk.json
+config.ini
