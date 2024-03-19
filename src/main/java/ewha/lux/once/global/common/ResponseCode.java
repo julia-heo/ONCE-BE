@@ -35,6 +35,8 @@ public enum ResponseCode {
     OWNED_CARD_NOT_FOUND(3104, false, "보유한 카드가 없습니다."),
     INVALID_OWNED_CARD(3105, false, "보유한 카드가 아닙니다."),
     INVALID_MAINCARD(3106, false, "주카드가 아닙니다."),
+    CARD_BENEFITS_CRAWLING_FAIL(3107, false, "카드 혜택 데이터 크롤링에 실패했습니다."),
+    CARD_BENEFITS_INSERT_FAIL(3108, false, "카드 혜택 데이베이스 저장에 실패했습니다."),
 
     // 3200~ : mypage 관련 오류
     CHAT_HISTORY_NOT_FOUND(3200, false, "채팅이 존재하지 않습니다."),
