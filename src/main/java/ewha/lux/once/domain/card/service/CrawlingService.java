@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class CrawlingService {
-    private static final Logger LOG = LoggerFactory.getLogger(TestService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CrawlingService.class);
 
     // 매주 월요일 00:00 카드 혜택 크롤링
     @Scheduled(cron = "0 0 0 ? * 1")
