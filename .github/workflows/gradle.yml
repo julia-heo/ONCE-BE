@@ -30,9 +30,10 @@ jobs:
           cd ./src/main/resources
           touch ./application.properties
           echo "${{ secrets.PROPERTIES }}" > ./application.properties
-          echo "${{ secrets.ONCE_FIREBASE_ADMINSDK }}" ./firebase/once-firebase-adminsdk.json
-          cd ../java/ewha/lux/once/domain/card/service/crawling
-          echo "${{ secrets.RDS_CONFIG_INI }}" ./config.ini
+          echo "${{ secrets.RDS_CONFIG_INI }}" > ./crawling/config.ini
+          mkdir firebase
+          touch ./firebase/once-firebase-adminsdk.json
+          echo '${{ secrets.ONCE_FIREBASE_ADMINSDK }}' > ./firebase/once-firebase-adminsdk.json
         shell: bash
 
       - name: Build with Gradle
@@ -59,9 +60,10 @@ jobs:
           cd ./src/main/resources
           touch ./application.properties
           echo "${{ secrets.PROPERTIES }}" > ./application.properties
-          echo "${{ secrets.ONCE_FIREBASE_ADMINSDK }}" ./firebase/once-firebase-adminsdk.json
-          cd ../java/ewha/lux/once/domain/card/service/crawling
-          echo "${{ secrets.RDS_CONFIG_INI }}" ./config.ini
+          echo "${{ secrets.RDS_CONFIG_INI }}" > ./crawling/config.ini
+          mkdir firebase
+          touch ./firebase/once-firebase-adminsdk.json
+          echo '${{ secrets.ONCE_FIREBASE_ADMINSDK }}' > ./firebase/once-firebase-adminsdk.json
         shell: bash
 
       - name: Build with Gradle

@@ -57,3 +57,16 @@ tasks.named('test') {
 jar {
 	enabled = false
 }
+sourceSets{
+	main{
+		resources {
+			srcDirs 'src/main/resources'
+		}
+	}
+}
+
+tasks {
+	processResources {
+		duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+	}
+}
