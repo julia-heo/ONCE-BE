@@ -12,4 +12,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     Optional<Card> findByName(String name);
     List<Card> findAllByNameContains(String name);
     Optional<Card> findCardByName(String name);
+    List<Card> findByNameContainingAndCardCompanyIn(String name, List<CardCompany> cardCompanies);
 }
+
