@@ -101,9 +101,9 @@ public class UserController {
     // [Get] 카드 이름 검색
     @GetMapping("/card/searchname")
     @ResponseBody
-    public CommonResponse<?> searchCardName(@Param("name") String name) {
+    public CommonResponse<?> searchCardName(@Param("name") String name,@Param("code") String code) {
         try{
-            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getSearchCardName(name));
+            return new CommonResponse<>(ResponseCode.SUCCESS, userService.getSearchCardName(name, code));
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }

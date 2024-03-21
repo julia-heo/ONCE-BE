@@ -2,6 +2,7 @@ package ewha.lux.once.domain.user.service;
 
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.CardCompany;
+import ewha.lux.once.domain.card.entity.CardType;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
@@ -24,10 +25,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -122,6 +120,8 @@ public class UserService implements UserDetailsService {
                 cardSearchDto.setCardId(card.getId());
                 cardSearchDto.setCardName(card.getName());
                 cardSearchDto.setCardImg(card.getImgUrl());
+                if(card.getType().toString()=="DebitCard") cardSearchDto.setType("체크카드");
+                else cardSearchDto.setType("신용카드");
                 cardSearchDtos.add(cardSearchDto);
             }
             cardSearchListDto.setCardList(cardSearchDtos);
@@ -131,8 +131,10 @@ public class UserService implements UserDetailsService {
         return response;
     }
 
-    public List<CardNameSearchDto> getSearchCardName(String name) throws CustomException{
-        List<Card> cards = cardRepository.findAllByNameContains(name);
+    public List<CardNameSearchDto> getSearchCardName(String name,String code) throws CustomException{
+        String[] codes = code.split(",");
+        List<CardCompany> cardCompanies = cardCompanyRepository.findByCodeIn(Arrays.asList(codes));
+        List<Card> cards = cardRepository.findByNameContainingAndCardCompanyIn(name,cardCompanies);
         if (cards.isEmpty()) {
             throw new CustomException(ResponseCode.NO_SEARCH_RESULTS);
         }
@@ -141,9 +143,13 @@ public class UserService implements UserDetailsService {
                         card.getId(),
                         card.getName(),
                         card.getImgUrl(),
-                        card.getCardCompany().getName()
+                        card.getCardCompany().getName(),
+                        getCardTypeName(card.getType())
                 ))
                 .collect(Collectors.toList());
+    }
+    private String getCardTypeName(CardType type) {
+        return type == CardType.CreditCard ? "신용카드" : "체크카드";
     }
 
     public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto) throws CustomException {
