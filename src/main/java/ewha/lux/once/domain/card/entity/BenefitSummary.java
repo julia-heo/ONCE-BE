@@ -21,7 +21,7 @@ public class BenefitSummary extends BaseEntity {
     private String benefitField;
 
     @Lob
-    @Column(name = "benefit_contents", nullable = false)
+    @Column(name = "benefit_contents", nullable = false, columnDefinition = "LONGTEXT")
     private String benefitContents;
 
     @ManyToOne
