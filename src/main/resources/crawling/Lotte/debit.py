@@ -1,12 +1,9 @@
-# ! pip install boto3
-# ! pip install Pillow
 
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
 import time
 import re
 import pandas as pd
@@ -15,6 +12,16 @@ from io import BytesIO
 from PIL import Image
 import boto3
 from selenium.webdriver.common.by import By
+import configparser
+
+config = configparser.ConfigParser()
+config.read('/crawling/config.ini')
+
+AWS_S3_ACCESSKEY = config['s3']['AWS_S3_ACCESSKEY']
+AWS_S3_SECRETKEY = config['s3']['AWS_S3_SECRETKEY']
+AWS_S3_BUCKET = config['s3']['AWS_S3_BUCKET']
+AWS_S3_REGION = config['s3']['AWS_S3_REGION']
+
 
 # S3연결
 def s3_connection():
@@ -22,8 +29,8 @@ def s3_connection():
         s3 = boto3.client(
             service_name="s3",
             region_name="ap-northeast-2",
-            aws_access_key_id="{AWS_S3_ACCESSKEY}",
-            aws_secret_access_key="{AWS_S3_SECRETKEY}",
+            aws_access_key_id=AWS_S3_ACCESSKEY,
+            aws_secret_access_key=AWS_S3_SECRETKEY,
         )
     except Exception as e:
         print(e, flush=True)
@@ -45,8 +52,8 @@ def s3_put_object(cardImg,cardNo):
             image_fileobj.seek(0)
 
             # S3에 업로드
-            s3.upload_fileobj(image_fileobj, "{AWS_S3_BUCKET}", "lottecard/"+cardNo+".png",ExtraArgs={"ContentType": "image/jpg", "ACL": "public-read"})
-            return "https://{AWS_S3_BUCKET}.s3.{AWS_S3_REGION}.amazonaws.com/lottecard/"+cardNo+".png"
+                        s3.upload_fileobj(image_fileobj, AWS_S3_BUCKET, "lottecard/"+cardNo+".png",ExtraArgs={"ContentType": "image/jpg", "ACL": "public-read"})
+                        return "https://{AWS_S3_BUCKET}.s3."+AWS_S3_REGION+".amazonaws.com/lottecard/"+cardNo+".png"
         else:
             return cardImg
     except Exception as e:
