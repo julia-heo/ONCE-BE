@@ -29,7 +29,7 @@ public class CardController {
     // ** 추후 삭제해야 함 - 테스트용 ** ==================================
     @GetMapping("/test/{companyID}")
     @ResponseBody
-    public CommonResponse<?> testtest(@AuthenticationPrincipal UserAccount user, @PathVariable("companyId") int companyId) {
+    public CommonResponse<?> testtest(@AuthenticationPrincipal UserAccount user, @PathVariable("companyID") int companyId) {
         try {
             crawlingService.cardCrawlingTest(companyId);
             return new CommonResponse<>(ResponseCode.SUCCESS);
