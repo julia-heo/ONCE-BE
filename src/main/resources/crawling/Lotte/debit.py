@@ -151,8 +151,14 @@ def cardList(associate):
     url = 'https://www.lottecard.co.kr/app/LPCDAEA_V100.lc'
 
     chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(options=chrome_options)
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument("--single-process")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument('--disable-web-security')
+
+    service = Service(executable_path=r'/usr/bin/chromedriver')
+    driver = webdriver.Chrome(service=service,options=chrome_options)
 
     # 웹 페이지 로드
     driver.get(url)
@@ -190,17 +196,17 @@ created_at = []
 for card in cardList(False):
     cardNo = card.find('a').get('onclick')
     cardNo = re.search(r"'(.*?)'", cardNo).group(1)
-    
+
     cardurl='https://www.lottecard.co.kr/app/LPCDADB_V100.lc?vtCdKndC='+cardNo
-    
+
     cardImg= "https:" + card.find('img').get('src')
     img_url.append(s3_put_object(cardImg,cardNo))
-    
+
     cardName=card.find('b').text
     name.append(cardName)
 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ")
-    
+
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
 
@@ -211,17 +217,17 @@ for card in cardList(False):
 for card in cardList(True):
     cardNo = card.find('a').get('onclick')
     cardNo = re.search(r"'(.*?)'", cardNo).group(1)
-    
+
     cardurl='https://www.lottecard.co.kr/app/LPCDADB_V100.lc?vtCdKndC='+cardNo
-    
+
     cardImg= "https:" + card.find('img').get('src')
     img_url.append(s3_put_object(cardImg,cardNo))
-    
+
     cardName=card.find('b').text
     name.append(cardName)
 
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"](제휴) --- 웹 페이지에 접속 중... ")
-    
+
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
 
@@ -229,12 +235,12 @@ for card in cardList(True):
     formatted_now = now_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
     created_at.append(formatted_now)
 
-    
+
 card_company_id = [5] * len(name)
 type = ["DebitCard"] * len(name)
 
 data = {"card_company_id":card_company_id, "name" : name, "img_url" : img_url, "benefits": benefits, "created_at": created_at,"type":type}
 df = pd.DataFrame(data)
- 
-df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Lotte/debit_benefit.csv", encoding = "utf-8-sig", index=False)
+
+df.to_csv("/crawling/Lotte/debit_benefit.csv", encoding = "utf-8-sig", index=False)
 print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 롯데카드 체크카드 크롤링 완료")

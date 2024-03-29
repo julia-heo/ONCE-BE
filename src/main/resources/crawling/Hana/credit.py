@@ -16,9 +16,12 @@ from bs4 import BeautifulSoup
 url = "https://www.hanacard.co.kr/OPI31000000D.web?schID=pcd&mID=OPI31000005P&CT_ID=241704030444153#none"
 
 chrome_options = Options()
-chrome_options.add_argument('--headless')  
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument("--disable-dev-shm-usage")
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+service = Service(executable_path=r'/usr/bin/chromedriver')
+driver = webdriver.Chrome(service=service,options=chrome_options)
 
 driver.implicitly_wait(20)
 print("======= [하나] 신용 카드 정보 크롤링 =======")
@@ -35,24 +38,24 @@ card_urls = []
 card_imgs = []
 
 tabs = driver.find_elements(By.CSS_SELECTOR, "#stc_list > li")
- 
+
 for tab in tabs:
     tab.click()
-    
+
     time.sleep(3)
     tab_content = driver.page_source
     soup = BeautifulSoup(tab_content, 'html.parser')
-    
+
     # 각 탭에서 카드 정보 추출 ==========
     main_area = soup.find('article', {'class': 'card_main_area'})
     card_ul = main_area.find('ul',{'class': 'card_slide_area'})
     card_li = card_ul.find_all('li', {'class': 'li'})
-    
+
     for i in range(len(card_li)):
-        # 카드 이름 
+        # 카드 이름
         name = card_li[i].find('dl',{'class': 'txt'}).find('dt').text
         card_names.append(name)
-                
+
         # 카드 고유 번호
         url_btn = card_li[i].find('ul', {'class': 'btn'}).find_all('li')[1]
         a_tag = url_btn.find('a', {'class': 'btn_ty04'})
@@ -60,7 +63,7 @@ for tab in tabs:
         onclick_value = a_tag.get('onclick')
         url = onclick_value.split("'")[1]
         card_urls.append(url)
-        
+
         # 카드 이미지
         img = card_li[i].find('img')['src']
         card_imgs.append('https://www.hanacard.co.kr' + img)
@@ -71,13 +74,13 @@ driver.quit()
 data = {"card_name" : card_names, "card_url" : card_urls, "card_img": card_imgs}
 df = pd.DataFrame(data)
 
-df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Hana/hana_creditCardInfos.csv", encoding = "utf-8-sig")
+df.to_csv("/crawling/Hana/hana_creditCardInfos.csv", encoding = "utf-8-sig")
 
 '''
     전체 카드 혜택 크롤링
     credit_benefit.csv : card_company_id, name, img_url, benefits, created_at, type
 '''
-card_infos = pd.read_csv('src/main/java/ewha/lux/once/domain/card/service/crawling/Hana/hana_creditCardInfos.csv')
+card_infos = pd.read_csv('/crawling/Hana/hana_creditCardInfos.csv')
 
 
 card_urls = card_infos['card_url'].tolist()
@@ -95,17 +98,21 @@ mID_urls = [str(url).zfill(5) for url in card_urls] # 다섯 자리로 맞추기
 
 for i, url in enumerate(card_urls):
     url = f'https://www.hanacard.co.kr/OPI41000000D.web?schID=pcd&mID=PI410{mID_urls[i]}P&CD_PD_SEQ={url}&'
-    
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')  
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    
+    chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        service = Service(executable_path=r'/usr/bin/chromedriver')
+        driver = webdriver.Chrome(service=service,options=chrome_options)
+
     driver.implicitly_wait(20)
     now = datetime.now()
     created_at.append(now)
     print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})")
 
+    time.sleep(3)
     driver.get(url)
     time.sleep(3)
 
@@ -118,18 +125,18 @@ for i, url in enumerate(card_urls):
     if len(tab_list) == 0: # 탭이 하나도 없는 경우
         card_view_detail = soup.find('div', {'class': 'card_view_detail'})
         info_list = card_view_detail.find('ul', {'class': 'card_li'}).find_all('li', {'class': 'list'})
-        
+
         for info in info_list:
             tit = info.find('dt', {'class': 'tit'})
             tit = str(tit.get_text(separator=' ', strip=True))
             benefit += f'[{tit}]'
-                
+
             info_txt_list = info.find('dd', {'class': 'txt'}).find_all('li', {'class': 'blt1'})
             for txt in info_txt_list:
                 info_txt = str(txt.get_text(separator=' ', strip=True))
                 benefit += f'{info_txt} '
-            
-    elif len(tab_list) == 1:  
+
+    elif len(tab_list) == 1:
         title = tab_list[0].find('h5', {'class': 'blind'})
         if title:
             title = str(title.get_text(separator=' ', strip=True))
@@ -142,7 +149,7 @@ for i, url in enumerate(card_urls):
             if cont_tit:
                 cont_tit = str(cont_tit.get_text(separator=' ', strip=True))
                 benefit += f'[{cont_tit}]'
-                
+
             tables = cont.select('table')
             for table_num, table in enumerate(tables):
 
@@ -161,11 +168,11 @@ for i, url in enumerate(card_urls):
                             row_data.extend([content] * colspan)
 
                         row_string = ' '.join(['({})'.format(data) for data in row_data])
-                            
+
                         # 각 행을 설명하는 문장 출력
                         sentence = f"표의 {j + 1}번째 행은 {row_string}로 이루어져 있습니다."
                         benefit += sentence
-                            
+
             cont_ul = cont.find_all('ul', recursive=False)
             if cont_ul:
                 for ul in cont_ul:
@@ -173,23 +180,23 @@ for i, url in enumerate(card_urls):
                     for li in cont_li:
                         # li 태그 하위에 table이 없는 경우에만 처리
                         if not li.find('table'):
-                           benefit += li.text    
+                           benefit += li.text
     else:
         # 주요 혜택
         title = tab_list[0].find('h5', {'class': 'blind'}).text
         benefit += f'###{title}'
-        
+
         info_list = tab_list[0].find('ul', {'class': 'card_info_list'}).find_all('li')
 
         for info in info_list:
             tit = info.find('div', {'class': 'tit'}).find('p')
             tit = str(tit.get_text(separator=' ', strip=True))
             benefit += f'[{tit}]'
-                
+
             info_txt = info.find('div', {'class': 'inner'}).find('p')
             info_txt = str(info_txt.get_text(separator=' ', strip=True))
             benefit += info_txt
-                     
+
         # 주요 혜택 제외 나머지 탭
         for tab in tab_list[1:]:
             title = tab.find('h5', {'class': 'blind'})
@@ -205,7 +212,7 @@ for i, url in enumerate(card_urls):
                     cont_tit = str(cont_tit.get_text(separator=' ', strip=True))
                     benefit += f'[{cont_tit}]'
 
-                
+
                 tables = cont.select('table')
                 for table_num, table in enumerate(tables):
                     # 표가 있을 때만 출력
@@ -223,11 +230,11 @@ for i, url in enumerate(card_urls):
                                 row_data.extend([content] * colspan)
 
                             row_string = ' '.join(['({})'.format(data) for data in row_data])
-                            
+
                             # 각 행을 설명하는 문장 출력
                             sentence = f"표의 {j + 1}번째 행은 {row_string}로 이루어져 있습니다."
                             benefit += sentence
-                            
+
                 cont_ul = cont.find_all('ul', recursive=False)
                 if cont_ul:
                     for ul in cont_ul:
@@ -236,7 +243,7 @@ for i, url in enumerate(card_urls):
                             # li 태그 하위에 table이 없는 경우에만 처리
                             if not li.find('table'):
                                 benefit += li.text
-                            
+
     benefits.append(benefit)
 
 print("작업을 완료했습니다.")
@@ -250,4 +257,4 @@ driver.quit()
 data = {"card_company_id": card_company_id, "name": name, "img_url": img_url, "benefits" : benefits, "created_at": created_at, "type": type}
 df = pd.DataFrame(data)
 
-df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Hana/credit_benefit.csv", encoding = "utf-8-sig", index=False)
+df.to_csv("/crawling/Hana/credit_benefit.csv", encoding = "utf-8-sig", index=False)
