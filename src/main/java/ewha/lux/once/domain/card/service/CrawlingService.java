@@ -30,6 +30,16 @@ public class CrawlingService {
         // 카드 혜택 요약 진행
     }
 
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    public void cardCrawlingTest(int companyId) throws CustomException {
+        String[] cardCompanyList = {"Kookmin", "Hyundai", "Samsung", "Shinhan", "Lotte", "Hana"};
+
+        crawling(cardCompanyList[companyId - 1]);
+
+    }
+    // ============================================================
+
+
     private static void crawling(String cardCompany) throws CustomException{
         LOG.info(cardCompany+" 크롤링 시작");
         executeFile(cardCompany+"/credit.py");
@@ -40,18 +50,18 @@ public class CrawlingService {
 
     private static void executeFile(String path) throws CustomException {
         try {
-            ProcessBuilder pb = new ProcessBuilder("python", "./crawling/"+path);
+            ProcessBuilder pb = new ProcessBuilder("python3", "/crawling/"+path);
             pb.redirectErrorStream(true);
             Process p = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-            List<String> results;
 
-            results = br.lines().collect(Collectors.toList());
-
-            for (String result : results) {
-                LOG.info(result);
+            String line;
+            while ((line = br.readLine()) != null) {
+                // 실행 결과 처리
+                LOG.info(line);
             }
+
             p.waitFor();
 
         } catch (Exception e){
@@ -60,7 +70,7 @@ public class CrawlingService {
     }
     private static void executeInsertData(String firstInput, String secondInput) throws CustomException {
         try {
-            ProcessBuilder pb = new ProcessBuilder("python", "./crawling/DatabaseInsert.py",firstInput,secondInput);
+            ProcessBuilder pb = new ProcessBuilder("python3", "/crawling/DatabaseInsert.py",firstInput,secondInput);
             pb.redirectErrorStream(true);
             Process p = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));

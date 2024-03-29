@@ -5,6 +5,7 @@ import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.dto.CodefCardListRequestDto;
 import ewha.lux.once.domain.card.service.CardService;
 import ewha.lux.once.domain.card.dto.MainCardRequestDto;
+import ewha.lux.once.domain.card.service.CrawlingService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
@@ -14,6 +15,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @Controller
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +24,20 @@ import org.springframework.web.bind.annotation.*;
 public class CardController {
 
     private final CardService cardService;
+    private final CrawlingService crawlingService;
+
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    @GetMapping("/test/{companyID}")
+    @ResponseBody
+    public CommonResponse<?> testtest(@AuthenticationPrincipal UserAccount user, @PathVariable("companyId") int companyId) {
+        try {
+            crawlingService.cardCrawlingTest(companyId);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+    // ============================================================
 
     // [Get] 마이월렛 조회
     @GetMapping("")
