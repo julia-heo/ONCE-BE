@@ -16,9 +16,10 @@ url = "https://www.hyundaicard.com/cpc/cr/CPCCR0621_11.hc?cardflag=C#aTab_2"
 
 chrome_options = Options()
 chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-web-security')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument("--disable-dev-shm-usage")
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver",chrome_options=chrome_options)
 
 driver.implicitly_wait(20)
 print("======= [현대] 신용 카드 리스트 크롤링 =======")
@@ -53,13 +54,13 @@ driver.quit()
 data = {"card_name" : card_names, "card_url" : card_urls, "card_img": card_imgs}
 df = pd.DataFrame(data)
 
-df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Hyundai/hyundai_checkcardInfos.csv", encoding = "utf-8-sig")
+df.to_csv("/crawling/Hyundai/hyundai_checkcardInfos.csv", encoding = "utf-8-sig")
 
 '''
     신용 카드 혜택 크롤링
     debit_benefit.csv : card_company_id, name, img_url, benefits, created_at, type
 '''
-card_infos = pd.read_csv('src/main/java/ewha/lux/once/domain/card/service/crawling/Hyundai/hyundai_checkcardInfos.csv')
+card_infos = pd.read_csv('/crawling/Hyundai/hyundai_checkcardInfos.csv')
 
 card_urls = card_infos['card_url'].tolist()
 name = card_infos['card_name'].tolist()
@@ -76,15 +77,17 @@ for i in range(len(card_urls)):
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-web-security')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver",chrome_options=chrome_options)
 
     driver.implicitly_wait(20)
     now = datetime.now()
     created_at.append(now)
     print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})")
 
+    time.sleep(3)
     driver.get(card_urls[i])
     time.sleep(3)
 
@@ -120,7 +123,6 @@ driver.quit()
 data = {"card_company_id": card_company_id, "name": name, "img_url": img_url, "benefits" : benefits, "created_at": created_at, "type": type}
 df = pd.DataFrame(data)
 
-df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Hyundai/debit_benefit.csv", encoding = "utf-8-sig", index=False)
-
+df.to_csv("/crawling/Hyundai/debit_benefit.csv", encoding = "utf-8-sig", index=False)
 
 
