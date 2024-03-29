@@ -73,7 +73,7 @@ try:
                     cursor.execute(insert_query, (card_company_id, name, img_url, benefits, created_at, type))
 
         connection.commit()
-        print(f"{current_time} [{cardCompany} {insert_type}] --- DB update 완료 ")
+        print(f"{current_time} [{cardCompany} {insert_type}] --- DB update 완료 ", flush=True)
 
 finally:
     connection.close()
