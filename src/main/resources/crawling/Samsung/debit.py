@@ -23,8 +23,8 @@ service = Service(executable_path=r'/usr/bin/chromedriver')
 driver = webdriver.Chrome(service=service,options=chrome_options)
 
 driver.implicitly_wait(20)
-print("======= [삼성] 체크 카드 리스트 크롤링 =======")
-print("웹 페이지에 접속 중...")
+print("======= [삼성] 체크 카드 리스트 크롤링 =======", flush=True)
+print("웹 페이지에 접속 중...", flush=True)
 driver.get(url)
 time.sleep(3)
 
@@ -49,7 +49,7 @@ for idx, element in enumerate(list_elements, 1):
     card_url_code = card_img_element[-8:-4]
     card_urls.append('https://www.samsungcard.com/home/card/cardinfo/PGHPPCCCardCardinfoDetails001?code=ABP' + card_url_code)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 data = {"card_name" : card_names, "card_url" : card_urls, "card_img": card_imgs}
@@ -61,7 +61,7 @@ df.to_csv("/crawling/Samsung/samsung_checkcardInfos.csv", encoding = "utf-8-sig"
     체크 카드 혜택 크롤링
     debit_benefit.csv : card_company_id, name, img_url, benefits, created_at, type
 '''
-card_infos = pd.read_csv('/crawling/Samsung/samsung_checkcardInfos.csv')
+card_infos = pd.read_csv('/crawling/Samsung/samsung_checkcardInfos.csv', index=False)
 
 card_urls = card_infos['card_url'].tolist()
 name = card_infos['card_name'].tolist()
@@ -73,7 +73,7 @@ benefits = []
 created_at = []
 type = ["DebitCard"] * len(card_urls)
 
-print("======= [삼성] 전체 카드 혜택 정보 크롤링 =======")
+print("======= [삼성] 전체 카드 혜택 정보 크롤링 =======",flush=True)
 for i in range(len(card_urls)):
 
     chrome_options = Options()
@@ -87,7 +87,7 @@ for i in range(len(card_urls)):
     driver.implicitly_wait(20)
     now = datetime.now()
     created_at.append(now)
-    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})")
+    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})", flush=True)
 
     time.sleep(3)
     driver.get(card_urls[i])
@@ -133,7 +133,7 @@ for i in range(len(card_urls)):
 
     benefits.append(benefit)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 '''
@@ -145,5 +145,4 @@ data = {"card_company_id": card_company_id, "name": name, "img_url": img_url, "b
 df = pd.DataFrame(data)
 
 df.to_csv("/crawling/Samsung/debit_benefit.csv", encoding = "utf-8-sig", index=False)
-
 

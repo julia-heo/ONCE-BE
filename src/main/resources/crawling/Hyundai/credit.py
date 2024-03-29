@@ -22,8 +22,8 @@ service = Service(executable_path='/usr/bin/chromedriver')
 driver = webdriver.Chrome(service=service,options=chrome_options)
 
 driver.implicitly_wait(20)
-print("======= [현대] 신용 카드 리스트 크롤링 =======")
-print("웹 페이지에 접속 중...")
+print("======= [현대] 신용 카드 리스트 크롤링 =======", flush=True)
+print("웹 페이지에 접속 중...", flush=True)
 driver.get(url)
 time.sleep(3)
 
@@ -352,7 +352,6 @@ for i in range(len(card_section)):
 
             card_url_a = element.find('a')
             card_url = card_url_a.get('href')
-            print('코드' + card_url)
             card_urls.append('https://www.hyundaicard.com' + card_url)
             continue
 
@@ -380,7 +379,7 @@ for i in range(len(card_section)):
 
         card_urls.append('https://www.hyundaicard.com/cpc/cr/CPCCR0201_01.hc?cardWcd=' + card_url_code)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 data = {"card_name" : card_names, "card_url" : card_urls, "card_img": card_imgs}
@@ -405,7 +404,7 @@ benefits = []
 created_at = []
 type = ["CreditCard"] * len(card_urls)
 
-print("======= [현대] 전체 카드 혜택 정보 크롤링 =======")
+print("======= [현대] 전체 카드 혜택 정보 크롤링 =======", flush=True)
 for i in range(len(card_urls)):
 
     chrome_options = Options()
@@ -419,7 +418,7 @@ for i in range(len(card_urls)):
     driver.implicitly_wait(20)
     now = datetime.now()
     created_at.append(now)
-    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})")
+    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})", flush=True)
 
     time.sleep(3)
     driver.get(card_urls[i])
@@ -447,7 +446,7 @@ for i in range(len(card_urls)):
 
     benefits.append(benefit)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 '''
@@ -459,5 +458,4 @@ data = {"card_company_id": card_company_id, "name": name, "img_url": img_url, "b
 df = pd.DataFrame(data)
 
 df.to_csv("/crawling/Hyundai/credit_benefit.csv", encoding = "utf-8-sig", index=False)
-
 

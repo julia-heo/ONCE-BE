@@ -2,6 +2,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 import time
 import re
 import pandas as pd
@@ -21,9 +22,9 @@ def s3_connection():
             aws_secret_access_key="{AWS_S3_SECRETKEY}",
         )
     except Exception as e:
-        print(e)
+        print(e, flush=True)
     else:
-        print("s3 연결 성공")
+        print("s3 연결 성공", flush=True)
         return s3
 
 # 이미지 저장, 주소반환
@@ -150,12 +151,10 @@ def cardList(associate):
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--single-process')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-web-security')
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
     service = Service(executable_path='/usr/bin/chromedriver')
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    driver = webdriver.Chrome(service=service,options=chrome_options)
 
     # 웹 페이지 로드
     driver.get(url)
@@ -193,17 +192,17 @@ created_at = []
 for card in cardList(False):
     cardNo = card.find('a').get('onclick')
     cardNo = re.search(r"'(.*?)'", cardNo).group(1)
-    
+
     cardurl='https://www.lottecard.co.kr/app/LPCDADB_V100.lc?vtCdKndC='+cardNo
-    
+
     cardImg= "https:" + card.find('img').get('src')
     img_url.append(s3_put_object(cardImg,cardNo))
-    
+
     cardName=card.find('b').text
     name.append(cardName)
 
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ")
-    
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ", flush=True)
+
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
 
@@ -214,17 +213,17 @@ for card in cardList(False):
 for card in cardList(True):
     cardNo = card.find('a').get('onclick')
     cardNo = re.search(r"'(.*?)'", cardNo).group(1)
-    
+
     cardurl='https://www.lottecard.co.kr/app/LPCDADB_V100.lc?vtCdKndC='+cardNo
-    
+
     cardImg= "https:" + card.find('img').get('src')
     img_url.append(s3_put_object(cardImg,cardNo))
-    
+
     cardName=card.find('b').text
     name.append(cardName)
 
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"](제휴) --- 웹 페이지에 접속 중... ")
-    
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"](제휴) --- 웹 페이지에 접속 중... ", flush=True)
+
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
 
@@ -232,12 +231,12 @@ for card in cardList(True):
     formatted_now = now_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
     created_at.append(formatted_now)
 
-    
+
 card_company_id = [5] * len(name)
 type = ["CreditCard"] * len(name)
 
 data = {"card_company_id":card_company_id, "name" : name, "img_url" : img_url, "benefits": benefits, "created_at": created_at,"type":type}
 df = pd.DataFrame(data)
- 
+
 df.to_csv("/crawling/Lotte/credit_benefit.csv", encoding = "utf-8-sig", index=False)
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 롯데카드 신용카드 크롤링 완료")
+print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 롯데카드 신용카드 크롤링 완료", flush=True)

@@ -50,7 +50,7 @@ public class CrawlingService {
 
     private static void executeFile(String path) throws CustomException {
         try {
-            ProcessBuilder pb = new ProcessBuilder("python3", "/crawling/"+path);
+            ProcessBuilder pb = new ProcessBuilder("python3", "-u", "/crawling/"+path);
             pb.redirectErrorStream(true);
             Process p = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));

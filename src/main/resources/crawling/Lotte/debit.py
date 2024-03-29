@@ -5,6 +5,8 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
 import time
 import re
 import pandas as pd
@@ -24,9 +26,9 @@ def s3_connection():
             aws_secret_access_key="{AWS_S3_SECRETKEY}",
         )
     except Exception as e:
-        print(e)
+        print(e, flush=True)
     else:
-        print("s3 연결 성공")
+        print("s3 연결 성공", flush=True)
         return s3
 
 # 이미지 저장, 주소반환
@@ -37,7 +39,7 @@ def s3_put_object(cardImg,cardNo):
         w, h = img.size
         if w < h : # 이미지가 세로인 경우
             img = img.rotate(90, expand=True)
-            
+
             image_fileobj = BytesIO()
             img.save(image_fileobj, format='PNG')
             image_fileobj.seek(0)
@@ -49,14 +51,14 @@ def s3_put_object(cardImg,cardNo):
             return cardImg
     except Exception as e:
         return False
-    
+
 # 페이지 크롤링 함수
 def cardCrawling (cardurl):
     benefits=""
-    
+
     cardhtml=urlopen(cardurl)
     cardbs=BeautifulSoup(cardhtml,'html.parser')
-    
+
     # benefits
     benes = cardbs.findAll('div',{'class','bnfCont'})
     if len(benes) == 0:
@@ -88,14 +90,14 @@ def cardCrawling (cardurl):
                         sentence=sentence[0:-2]
                         sentence += " 로 이루어져 있습니다."
                         j+=1
-                    benefits+=sentence 
+                    benefits+=sentence
 
                 except:
-                    if str(detail)[1:3]=="h3": 
+                    if str(detail)[1:3]=="h3":
                         benefits+="["+detail.text+"]"
-                    elif str(detail)[1:3]=="h4": 
+                    elif str(detail)[1:3]=="h4":
                         benefits+="/"+detail.text+": "
-                    elif str(detail)[1:6]=="style": 
+                    elif str(detail)[1:6]=="style":
                         continue
                     else:
                         benefits+=detail.text.replace("\n","").replace('\r','').replace('\t','')
@@ -133,19 +135,19 @@ def cardCrawling (cardurl):
                             sentence=sentence[0:-2]
                             sentence += " 로 이루어져 있습니다."
                             j+=1
-                        benefits+=sentence 
+                        benefits+=sentence
 
                     except:
-                        if str(detail)[1:3]=="h5": 
+                        if str(detail)[1:3]=="h5":
                             benefits+="/"+detail.text.replace("\n","").replace('\r','').replace('\t','')+": "
-                        elif str(detail)[1:7]=="script": 
+                        elif str(detail)[1:7]=="script":
                             continue
                         else:
                             benefits+=detail.text.replace("\n","").replace('\r','').replace('\t','')
             benefits+="\n"
             benefits=benefits.replace("'","")
-            
-    return benefits 
+
+    return benefits
 
 def cardList(associate):
     url = 'https://www.lottecard.co.kr/app/LPCDAEA_V100.lc'
@@ -153,11 +155,9 @@ def cardList(associate):
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument("--single-process")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument('--disable-web-security')
 
-    service = Service(executable_path=r'/usr/bin/chromedriver')
+    service = Service(executable_path='/usr/bin/chromedriver')
     driver = webdriver.Chrome(service=service,options=chrome_options)
 
     # 웹 페이지 로드
@@ -205,7 +205,7 @@ for card in cardList(False):
     cardName=card.find('b').text
     name.append(cardName)
 
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ", flush=True)
 
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
@@ -226,7 +226,7 @@ for card in cardList(True):
     cardName=card.find('b').text
     name.append(cardName)
 
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"](제휴) --- 웹 페이지에 접속 중... ")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"](제휴) --- 웹 페이지에 접속 중... ", flush=True)
 
     benefit = cardCrawling(cardurl)
     benefits.append(benefit)
@@ -243,4 +243,4 @@ data = {"card_company_id":card_company_id, "name" : name, "img_url" : img_url, "
 df = pd.DataFrame(data)
 
 df.to_csv("/crawling/Lotte/debit_benefit.csv", encoding = "utf-8-sig", index=False)
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 롯데카드 체크카드 크롤링 완료")
+print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 롯데카드 체크카드 크롤링 완료", flush=True)

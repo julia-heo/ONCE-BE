@@ -110,9 +110,9 @@ def cate_page(url,cateIdx):
 
         if cardName not in name:
             name.append(cardName)
-            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ")
+            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 웹 페이지에 접속 중... ", flush=True)
         else:
-            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 이미 존재하는 카드입니다 ")
+            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" ["+cardName+"] --- 이미 존재하는 카드입니다 ", flush=True)
             continue
 
         img=card_bs.find('div',{'class','cardBoxInner'}).img.get('src')
@@ -145,12 +145,12 @@ def cate_page(url,cateIdx):
 
         benefit=benefit.replace('\'','').replace('\t','')
         benefits.append(benefit)
-        
+
         now_datetime = datetime.now()
-        formatted_now = now_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")   
+        formatted_now = now_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
         created_at.append(formatted_now)
 
-    
+
 url='https://card.kbcard.com/CRD/DVIEW/HCAMCXPRICAC0047?pageNo=1&cateIdx='
 for i in range (1, 12):
     cateIdx = str(i)
@@ -161,6 +161,6 @@ type = ["CreditCard"] * len(name)
 
 data = {"card_company_id":card_company_id, "name" : name, "img_url" : img_url, "benefits": benefits, "created_at": created_at,"type":type}
 df = pd.DataFrame(data)
- 
+
 df.to_csv("src/main/java/ewha/lux/once/domain/card/service/crawling/Kookmin/credit_benefit.csv", encoding = "utf-8-sig", index=False)
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 국민카드 신용카드 크롤링 완료")
+print(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+" 국민카드 신용카드 크롤링 완료", flush=True)

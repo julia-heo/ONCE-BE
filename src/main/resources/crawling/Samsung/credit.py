@@ -25,8 +25,8 @@ driver = webdriver.Chrome(service=service,options=chrome_options)
 driver = webdriver.Chrome(service=webdriver.ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
 driver.implicitly_wait(20)
-print("======= [삼성] 신용 카드 리스트 크롤링 =======")
-print("웹 페이지에 접속 중...")
+print("======= [삼성] 신용 카드 리스트 크롤링 =======", flush=True)
+print("웹 페이지에 접속 중...", flush=True)
 driver.get(url)
 time.sleep(3)
 
@@ -54,7 +54,7 @@ for i in range(2, len(card_tab_section)):
         card_url_code = card_img_element[-11:-4]
         card_urls.append('https://www.samsungcard.com/home/card/cardinfo/PGHPPCCCardCardinfoDetails001?code=' + card_url_code)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 # 중복 제거
@@ -89,7 +89,7 @@ benefits = []
 created_at = []
 type = ["CreditCard"] * len(card_urls)
 
-print("======= [삼성] 전체 카드 혜택 정보 크롤링 =======")
+print("======= [삼성] 전체 카드 혜택 정보 크롤링 =======", flush=True)
 for i in range(len(card_urls)):
 
     chrome_options = Options()
@@ -103,7 +103,7 @@ for i in range(len(card_urls)):
     driver.implicitly_wait(20)
     now = datetime.now()
     created_at.append(now)
-    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})")
+    print(f"{now} [{card_names[i]}] --- 웹 페이지에 접속 중... ({i+1}/{len(card_urls)})", flush=True)
 
     time.sleep(3)
     driver.get(card_urls[i])
@@ -158,7 +158,7 @@ for i in range(len(card_urls)):
 
     benefits.append(benefit)
 
-print("작업을 완료했습니다.")
+print("작업을 완료했습니다.", flush=True)
 driver.quit()
 
 '''
@@ -170,5 +170,4 @@ data = {"card_company_id": card_company_id, "name": name, "img_url": img_url, "b
 df = pd.DataFrame(data)
 
 df.to_csv("/crawling/Samsung/credit_benefit.csv", encoding = "utf-8-sig", index=False)
-
 

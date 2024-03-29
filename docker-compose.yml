@@ -12,3 +12,9 @@ services:
     environment:
       - TZ=Asia/Seoul
     shm_size: 2gb
+    logging:
+      driver: json-file
+      options:
+        mode: non-blocking
+    stdin_open: true
+    tty: true
