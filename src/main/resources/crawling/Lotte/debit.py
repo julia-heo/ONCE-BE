@@ -52,8 +52,8 @@ def s3_put_object(cardImg,cardNo):
             image_fileobj.seek(0)
 
             # S3에 업로드
-                        s3.upload_fileobj(image_fileobj, AWS_S3_BUCKET, "lottecard/"+cardNo+".png",ExtraArgs={"ContentType": "image/jpg", "ACL": "public-read"})
-                        return "https://{AWS_S3_BUCKET}.s3."+AWS_S3_REGION+".amazonaws.com/lottecard/"+cardNo+".png"
+            s3.upload_fileobj(image_fileobj, AWS_S3_BUCKET, "lottecard/"+cardNo+".png",ExtraArgs={"ContentType": "image/jpg", "ACL": "public-read"})
+            return "https://{AWS_S3_BUCKET}.s3."+AWS_S3_REGION+".amazonaws.com/lottecard/"+cardNo+".png"
         else:
             return cardImg
     except Exception as e:
