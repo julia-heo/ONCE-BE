@@ -1,11 +1,8 @@
 package ewha.lux.once.domain.card.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
-import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
-import ewha.lux.once.domain.card.dto.CodefCardListRequestDto;
+import ewha.lux.once.domain.card.dto.*;
 import ewha.lux.once.domain.card.service.CardService;
-import ewha.lux.once.domain.card.dto.MainCardRequestDto;
 import ewha.lux.once.domain.card.service.CrawlingService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
@@ -41,9 +38,9 @@ public class CardController {
 
     @GetMapping("/test/summary")
     @ResponseBody
-    public CommonResponse<?> testSummary(@AuthenticationPrincipal UserAccount user) {
+    public CommonResponse<?> testSummary(@AuthenticationPrincipal UserAccount user, @RequestBody TestSummaryDto testSummaryDto) {
         try {
-            cardService.updateBenefitSummary();
+            cardService.updateBenefitSummaryTest(testSummaryDto.getPrompt(),testSummaryDto.getModel_name());
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());

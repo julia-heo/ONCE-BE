@@ -110,4 +110,23 @@ public class OpenaiService {
 
         return benefitJson;
     }
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    public BenefitDto[] gptBenefitSummaryTest(String benefits, String prompt, String model_name) throws CustomException, JsonProcessingException {
+
+        // gpt 요청 보내는 부분
+        OpenaiChatRequest request = new OpenaiChatRequest(model_name, prompt, benefits);
+        OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+
+        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+            throw new CustomException(ResponseCode.FAILED_TO_OPENAI);
+        }
+
+        String result = response.getChoices().get(0).getMessage().getContent();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
+
+        return benefitJson;
+    }
+    // ============================================================
 }
