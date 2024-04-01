@@ -112,21 +112,40 @@ public class OpenaiService {
     }
     // ** 추후 삭제해야 함 - 테스트용 ** ==================================
     public BenefitDto[] gptBenefitSummaryTest(String benefits, String prompt, String model_name) throws CustomException, JsonProcessingException {
+        try {
+            // gpt 요청 보내는 부분
+            OpenaiChatRequest request = new OpenaiChatRequest(model_name, prompt, benefits);
+            OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
 
-        // gpt 요청 보내는 부분
-        OpenaiChatRequest request = new OpenaiChatRequest(model_name, prompt, benefits);
-        OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+            if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+                throw new CustomException(ResponseCode.FAILED_TO_OPENAI);
+            }
 
-        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
-            throw new CustomException(ResponseCode.FAILED_TO_OPENAI);
+            String result = response.getChoices().get(0).getMessage().getContent();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
+
+            return benefitJson;
+        } catch(CustomException | JsonProcessingException e){
+            e.printStackTrace();
+            System.out.println("===========오류==========");
+            int i=2;
+            while (i>0) {
+                try {
+                    OpenaiChatRequest request = new OpenaiChatRequest("gpt-4", prompt, benefits);
+                    OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+                    String result = response.getChoices().get(0).getMessage().getContent();
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
+                    return benefitJson;
+                } catch (JsonProcessingException ex) {
+                    i--;
+                }
+            }
+            return null;
         }
-
-        String result = response.getChoices().get(0).getMessage().getContent();
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
-
-        return benefitJson;
     }
     // ============================================================
 }

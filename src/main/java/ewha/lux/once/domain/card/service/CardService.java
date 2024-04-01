@@ -255,8 +255,13 @@ public class CardService {
             benefitSummaryRepository.deleteAll(existingSummaries);
 
             log.info("[" + card.getName() + "] - 카드 혜택 요약 중... (" + index + "/" + cardList.size() + ")");
-            BenefitDto[] benefitJson = openaiService.gptBenefitSummaryTest(card.getBenefits(),prompt,model_name);
 
+            BenefitDto[] benefitJson = openaiService.gptBenefitSummaryTest(card.getBenefits(), prompt, model_name);
+
+            if (benefitJson==null){
+                System.out.println("===========제거========="+card.getName());
+                cardRepository.delete(card);
+            }
             for (BenefitDto benefit : benefitJson) {
                 BenefitSummary benefitSummary = BenefitSummary.builder()
                         .benefitField(benefit.getBenefit_field())
