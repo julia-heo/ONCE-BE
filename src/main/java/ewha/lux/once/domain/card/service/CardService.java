@@ -259,8 +259,9 @@ public class CardService {
             BenefitDto[] benefitJson = openaiService.gptBenefitSummaryTest(card.getBenefits(), prompt, model_name);
 
             if (benefitJson==null){
-                System.out.println("===========제거========="+card.getName());
-                cardRepository.delete(card);
+                System.out.println("===========PASS========="+card.getName());
+//                cardRepository.delete(card);
+                continue;
             }
             for (BenefitDto benefit : benefitJson) {
                 BenefitSummary benefitSummary = BenefitSummary.builder()

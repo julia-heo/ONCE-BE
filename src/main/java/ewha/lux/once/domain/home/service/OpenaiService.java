@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -127,20 +129,22 @@ public class OpenaiService {
             BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
 
             return benefitJson;
-        } catch(CustomException | JsonProcessingException e){
+        } catch(CustomException | JsonProcessingException | HttpClientErrorException e){
             e.printStackTrace();
             System.out.println("===========오류==========");
             int i=2;
             while (i>0) {
                 try {
-                    OpenaiChatRequest request = new OpenaiChatRequest("gpt-4", prompt, benefits);
+                    OpenaiChatRequest request = new OpenaiChatRequest("gpt-4-turbo-preview", prompt, benefits);
                     OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
                     String result = response.getChoices().get(0).getMessage().getContent();
 
                     ObjectMapper objectMapper = new ObjectMapper();
                     BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
                     return benefitJson;
-                } catch (JsonProcessingException ex) {
+//                } catch (JsonProcessingException | InterruptedException| HttpClientErrorException ex) {
+                } catch (JsonProcessingException | HttpClientErrorException ex) {
+                    ex.printStackTrace();
                     i--;
                 }
             }
