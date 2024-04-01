@@ -1,5 +1,6 @@
 package ewha.lux.once.domain.card.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
 import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
 import ewha.lux.once.domain.card.dto.CodefCardListRequestDto;
@@ -37,6 +38,20 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    @GetMapping("/test/summary")
+    @ResponseBody
+    public CommonResponse<?> testSummary(@AuthenticationPrincipal UserAccount user) {
+        try {
+            cardService.updateBenefitSummary();
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // ============================================================
 
     // [Get] 마이월렛 조회
