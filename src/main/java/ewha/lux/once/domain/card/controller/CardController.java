@@ -40,7 +40,20 @@ public class CardController {
     @ResponseBody
     public CommonResponse<?> testSummary(@AuthenticationPrincipal UserAccount user, @RequestBody TestSummaryDto testSummaryDto) {
         try {
-            cardService.updateBenefitSummaryTest(testSummaryDto.getPrompt(),testSummaryDto.getModel_name());
+            cardService.updateBenefitSummaryTest(testSummaryDto.getPrompt(), testSummaryDto.getModel_name());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/test/summary/index")
+    @ResponseBody
+    public CommonResponse<?> testSummaryByIndex(@AuthenticationPrincipal UserAccount user, @RequestBody TestSummaryIndexDto testSummaryIndexDto) {
+        try {
+            cardService.updateBenefitSummaryTestByIndex(testSummaryIndexDto.getPrompt(), testSummaryIndexDto.getModel_name(), testSummaryIndexDto.getStart_index(), testSummaryIndexDto.getEnd_index());
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
@@ -96,12 +109,13 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
     // [Get] CODEF 보유 카드 조회
     @GetMapping("/list")
     @ResponseBody
-    public CommonResponse<?> codefCardList (@AuthenticationPrincipal UserAccount user, @RequestBody CodefCardListRequestDto codefCardListRequestDto) {
+    public CommonResponse<?> codefCardList(@AuthenticationPrincipal UserAccount user, @RequestBody CodefCardListRequestDto codefCardListRequestDto) {
         try {
-            return new CommonResponse<>(ResponseCode.SUCCESS,cardService.getCodefCardList(user.getUsers(), codefCardListRequestDto));
+            return new CommonResponse<>(ResponseCode.SUCCESS, cardService.getCodefCardList(user.getUsers(), codefCardListRequestDto));
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
@@ -110,7 +124,7 @@ public class CardController {
     // [Post] 주카드 등록
     @PostMapping("/main")
     @ResponseBody
-    public CommonResponse<?> registerMainCard (@AuthenticationPrincipal UserAccount user, @RequestBody MainCardRequestDto mainCardRequestDto) {
+    public CommonResponse<?> registerMainCard(@AuthenticationPrincipal UserAccount user, @RequestBody MainCardRequestDto mainCardRequestDto) {
         try {
             cardService.postRegisterCard(user.getUsers(), mainCardRequestDto);
             return new CommonResponse<>(ResponseCode.SUCCESS);
@@ -122,7 +136,7 @@ public class CardController {
     // [Get] 주카드 실적 업데이트
     @GetMapping("/main/performance")
     @ResponseBody
-    public CommonResponse<?> registerMainCard (@AuthenticationPrincipal UserAccount user) {
+    public CommonResponse<?> registerMainCard(@AuthenticationPrincipal UserAccount user) {
         try {
             cardService.updateOwnedCardsPerformance(user.getUsers());
             return new CommonResponse<>(ResponseCode.SUCCESS);
