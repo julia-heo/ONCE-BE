@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -110,4 +112,44 @@ public class OpenaiService {
 
         return benefitJson;
     }
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    public BenefitDto[] gptBenefitSummaryTest(String benefits, String prompt, String model_name) throws CustomException, JsonProcessingException {
+        try {
+            // gpt 요청 보내는 부분
+            OpenaiChatRequest request = new OpenaiChatRequest(model_name, prompt, benefits);
+            OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+
+            if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+                throw new CustomException(ResponseCode.FAILED_TO_OPENAI);
+            }
+
+            String result = response.getChoices().get(0).getMessage().getContent();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
+
+            return benefitJson;
+        } catch(CustomException | JsonProcessingException | HttpClientErrorException e){
+            e.printStackTrace();
+            System.out.println("===========오류==========");
+            int i=2;
+            while (i>0) {
+                try {
+                    OpenaiChatRequest request = new OpenaiChatRequest("gpt-4-turbo-preview", prompt, benefits);
+                    OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+                    String result = response.getChoices().get(0).getMessage().getContent();
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    BenefitDto[] benefitJson = objectMapper.readValue(result, BenefitDto[].class);
+                    return benefitJson;
+//                } catch (JsonProcessingException | InterruptedException| HttpClientErrorException ex) {
+                } catch (JsonProcessingException | HttpClientErrorException ex) {
+                    ex.printStackTrace();
+                    i--;
+                }
+            }
+            return null;
+        }
+    }
+    // ============================================================
 }
