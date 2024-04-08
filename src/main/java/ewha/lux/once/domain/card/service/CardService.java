@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -56,6 +55,7 @@ public class CardService {
                     return new MyWalletResponseDto.OwnedCardListDto(
                             ownedCard.getId(),
                             ownedCard.getCard().getName(),
+                            ownedCard.getCard().getCardCompany().getName(),
                             ownedCard.getCard().getType().ordinal(),
                             ownedCard.getCard().getImgUrl(),
                             ownedCard.isMain(),
@@ -68,6 +68,7 @@ public class CardService {
                 .toList();
 
         return MyWalletResponseDto.MyWalletProfileDto.builder()
+                .nickname(nowUser.getNickname())
                 .ownedCardList(ownedCardList)
                 .build();
     }
@@ -118,6 +119,7 @@ public class CardService {
                         categoryGetPaymentAmount.getOrDefault(category, 0)
                 ))
                 .collect(Collectors.toList());
+
 
         return MontlyBenefitResponseDto.MontlyBenefitProfileDto.builder()
                 .month(month)
