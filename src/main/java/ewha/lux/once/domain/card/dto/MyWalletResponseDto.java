@@ -14,6 +14,7 @@ public class MyWalletResponseDto {
     @NoArgsConstructor
     @Builder
     public static class MyWalletProfileDto {
+        private String nickname;
         List<OwnedCardListDto> ownedCardList;
     }
 
