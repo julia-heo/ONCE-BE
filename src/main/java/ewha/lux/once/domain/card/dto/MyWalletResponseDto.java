@@ -25,6 +25,7 @@ public class MyWalletResponseDto {
     public static class OwnedCardListDto {
         private Long ownedCardId;
         private String cardName;
+        private String cardCompany;
         private int cardType;
         private String cardImg;
         private boolean isMaincard;

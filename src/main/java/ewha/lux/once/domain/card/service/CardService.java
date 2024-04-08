@@ -55,6 +55,7 @@ public class CardService {
                     return new MyWalletResponseDto.OwnedCardListDto(
                             ownedCard.getId(),
                             ownedCard.getCard().getName(),
+                            ownedCard.getCard().getCardCompany().getName(),
                             ownedCard.getCard().getType().ordinal(),
                             ownedCard.getCard().getImgUrl(),
                             ownedCard.isMain(),
