@@ -1,5 +1,7 @@
 package ewha.lux.once.domain.home.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.*;
@@ -39,13 +41,21 @@ public class HomeService {
 
         // 2. GPT 사용하는 경우
         String response = openaiService.cardRecommend(nowUser, keyword, paymentAmount);
-        String[] results = response.split(",");
+        ObjectMapper objectMapper = new ObjectMapper();
+        Integer cardId;
+        Card card;
+        String benefit;
+        Integer discount;
+        try {
+            Map<String, Object> map = objectMapper.readValue(response, Map.class);
+            cardId = (Integer) map.get("카드번호");
+            card = cardRepository.findById(Long.valueOf(cardId)).orElse(null);
+            benefit = (String) map.get("혜택 정보");
+            discount = (Integer) map.get("할인 금액");
 
-        Long cardId = Long.valueOf(results[0].trim());
-        Card card = cardRepository.findById(cardId).orElse(null);
-        String benefit = results[1].trim();
-        Integer discount = Integer.valueOf(results[2].trim());
-
+        } catch ( JsonProcessingException e) {
+            throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
+        }
 
         // 챗봇 대화 기록
         ChatHistory chat = ChatHistory.builder()
