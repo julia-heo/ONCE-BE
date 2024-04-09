@@ -45,6 +45,7 @@ public enum ResponseCode {
     // 3300~ : 챗봇 관련 오류
     FAILED_TO_GEMINI(3300, false, "요청 과정에서 오류가 발생했습니다."),
     FAILED_TO_OPENAI(3301, false, "요청 과정에서 오류가 발생했습니다."),
+    FAILED_TO_OPENAI_RECOMMEND(3302, false, "잘못된 응답이 반환되었습니다."),
 
     // 3400~ : 알림 관련 오류
     FCM_SEND_NOTIFICATION_FAIL(3400,false,"FCM 알림 전송에 실패하였습니다."),
