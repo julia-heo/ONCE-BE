@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import ewha.lux.once.domain.card.dto.*;
 import ewha.lux.once.domain.card.entity.BenefitSummary;
 import ewha.lux.once.domain.card.entity.Card;
+import ewha.lux.once.domain.card.entity.ConnectedCardCompany;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.BenefitDto;
 import ewha.lux.once.domain.home.entity.ChatHistory;
@@ -18,9 +19,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,11 +37,14 @@ public class CardService {
     private final ChatHistoryRepository chatHistoryRepository;
     private final UsersRepository usersRepository;
     private final CardRepository cardRepository;
+    private final CardCompanyRepository cardCompanyRepository;
     private final BenefitSummaryRepository benefitSummaryRepository;
-
+    private final ConnectedCardCompanyRepository connectedCardCompanyRepository;
     private final CODEFAPIService codefapi;
     private final CODEFAsyncService codefAsyncService;
     private final OpenaiService openaiService;
+    @Value("${google-map.api-key}")
+    private String apiKey;
 
     public MyWalletResponseDto.MyWalletProfileDto getMyWalletInfo(Users nowUser) throws CustomException {
         List<OwnedCard> ownedCards = ownedCardRepository.findOwnedCardByUsers(nowUser);
@@ -173,10 +180,26 @@ public class CardService {
             CodefCardListResponseDto cardDTO = new CodefCardListResponseDto(resCardName, resImageLink);
             cardDTOList.add(cardDTO);
         }
+        String companyname= cardCompanyRepository.findByCode(codefCardListRequestDto.getCode()).get().getName();
+        Optional<ConnectedCardCompany> existingRecord = connectedCardCompanyRepository.findByUsersAndCardCompany(nowUser, companyname);
+
+        if (existingRecord.isPresent()) {
+            ConnectedCardCompany record = existingRecord.get();
+            record.setConnectedAt(LocalDateTime.now()); // 연결 일자 업데이트
+            connectedCardCompanyRepository.save(record);
+        } else {
+            ConnectedCardCompany record = ConnectedCardCompany.builder()
+                    .users(nowUser)
+                    .cardCompany(companyname)
+                    .connectedAt(LocalDateTime.now())
+                    .build();
+            connectedCardCompanyRepository.save(record);
+        }
         return cardDTOList;
 
     }
 
+    // 주카드 등록
     public void postRegisterCard(Users nowUser, MainCardRequestDto mainCardRequestDto) throws CustomException {
         // 카드
         Optional<Card> optionalCard = cardRepository.findCardByName(mainCardRequestDto.getCardName());
@@ -185,6 +208,7 @@ public class CardService {
         Optional<OwnedCard> optionalOwnedCard = ownedCardRepository.findOwnedCardByUsersAndCard(nowUser, card);
         OwnedCard ownedCard;
         if (optionalOwnedCard.isPresent()) {
+            // 이미 등록된 경우
             ownedCard = optionalOwnedCard.get();
         } else {
             ownedCard = OwnedCard.builder()
@@ -201,6 +225,7 @@ public class CardService {
         int currentPerformance = (int) performResult.get("currentPerformance");
         String cardNo = (String) performResult.get("resCardNo");
 
+        // 단골가게 저장
         codefAsyncService.saveFavorite(mainCardRequestDto.getCode(), connectedId, ownedCard, nowUser, cardNo);
 
         ownedCard.setMaincard();
@@ -242,5 +267,22 @@ public class CardService {
             index++;
         }
         log.info("전체 카드 혜택 요약 완료");
+    }
+
+    public List<ConnectedCardCompanyResponseDto> getConnectedCardCompany(Users nowUser)throws CustomException{
+        List<ConnectedCardCompany> connectedList = connectedCardCompanyRepository.findAllByUsers(nowUser);
+        if (connectedList.isEmpty()) {
+            throw new CustomException(ResponseCode.NO_CONNECTED_CARD_COMPANY);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+        List<ConnectedCardCompanyResponseDto> responseDtoList = connectedList.stream()
+                .map(connected -> {
+                    String companyName = connected.getCardCompany();
+                    String connectedAt = connected.getConnectedAt().format(formatter);
+                    return new ConnectedCardCompanyResponseDto(companyName, connectedAt);
+                })
+                .collect(Collectors.toList());
+        return responseDtoList;
     }
 }
