@@ -1,8 +1,6 @@
 package ewha.lux.once.domain.home.controller;
 
-import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
-import ewha.lux.once.domain.home.dto.FCMTokenDto;
-import ewha.lux.once.domain.home.service.FirebaseCloudMessageService;
+import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
@@ -67,6 +65,17 @@ public class HomeController {
     public CommonResponse<?> announcedetail(@PathVariable Long announceId) {
         try {
             return new CommonResponse<>(ResponseCode.SUCCESS, homeService.getAnnounceDetail(announceId));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Get] 사용자 근처 단골가게 조회
+    @GetMapping("/gps")
+    @ResponseBody
+    public CommonResponse<?> nearFavorite(@AuthenticationPrincipal UserAccount user, @RequestBody SearchStoresRequestDto nearFavoriteRequestDto){
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.searchStores(nearFavoriteRequestDto, user.getUsers()));
         } catch (CustomException e){
             return new CommonResponse<>(e.getStatus());
         }

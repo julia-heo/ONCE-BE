@@ -3,14 +3,11 @@ package ewha.lux.once.domain.home.service;
 import ewha.lux.once.domain.card.dto.Place;
 import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
 import ewha.lux.once.domain.card.entity.OwnedCard;
-import ewha.lux.once.domain.home.entity.Favorite;
-import ewha.lux.once.domain.home.entity.Store;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.FavoriteRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
-import ewha.lux.once.global.repository.StoreRepository;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +18,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,61 +28,60 @@ public class CODEFAsyncService {
     @Value("${google-map.api-key}")
     private String apiKey;
     private final CODEFAPIService codefapi;
-    private final StoreRepository storeRepository;
     private final FavoriteRepository favoriteRepository;
     private final UsersRepository usersRepository;
     private final RestTemplate restTemplate;
     private final OwnedCardRepository ownedCardRepository;
     @Async
     public void saveFavorite(String code, String connectedId, OwnedCard ownedCard, Users nowUser, String cardNo) throws CustomException {
-        // 승인 내역 조회 -> 단골 가게 카드별 5개
-        List<String> favorites = codefapi.GetHistory(code,connectedId,ownedCard.getCard().getName(),cardNo);
-
-        Map<String, Store> existingStores = storeRepository.findByNameIn(favorites.stream()
-                        .map(favorite -> favorite.split("#")[0])
-                        .collect(Collectors.toList()))
-                .stream()
-                .collect(Collectors.toMap(Store::getName, Function.identity()));
-
-        List<Favorite> newFavorites = new ArrayList<>();
-        for (String favorite : favorites) {
-            String[] parts = favorite.split("#");
-            String storeName = parts[0];
-            String storeAddr = (parts.length > 1) ? parts[1] : "";
-
-            Store existingStore = existingStores.get(storeName);
-            if (existingStore == null) {
-                HashMap<String,Object> placeInfo = searchStoreAddr(storeName);
-                if(storeAddr==""){
-                    storeAddr = (String) placeInfo.get("formattedAddress");
-                }
-                Store store = Store.builder()
-                        .name(storeName)
-                        .address(storeAddr)
-                        .build();
-
-                if(placeInfo.get("x") != null && placeInfo.get("y") != null) {
-                    double x = (double) placeInfo.get("x");
-                    double y = (double) placeInfo.get("y");
-                    store.setX(x);
-                    store.setY(y);
-                }
-                storeRepository.save(store);
-
-                newFavorites.add(Favorite.builder()
-                        .store(store)
-                        .users(nowUser)
-                        .build());
-            } else {
-                if (!favoriteRepository.existsByStoreAndUsers(existingStore, nowUser)) {
-                    newFavorites.add(Favorite.builder()
-                            .store(existingStore)
-                            .users(nowUser)
-                            .build());
-                }
-            }
-        }
-        favoriteRepository.saveAll(newFavorites);
+//        // 승인 내역 조회 -> 단골 가게 카드별 5개
+//        List<String> favorites = codefapi.GetHistory(code,connectedId,ownedCard.getCard().getName(),cardNo);
+//
+//        Map<String, Store> existingStores = storeRepository.findByNameIn(favorites.stream()
+//                        .map(favorite -> favorite.split("#")[0])
+//                        .collect(Collectors.toList()))
+//                .stream()
+//                .collect(Collectors.toMap(Store::getName, Function.identity()));
+//
+//        List<Favorite> newFavorites = new ArrayList<>();
+//        for (String favorite : favorites) {
+//            String[] parts = favorite.split("#");
+//            String storeName = parts[0];
+//            String storeAddr = (parts.length > 1) ? parts[1] : "";
+//
+//            Store existingStore = existingStores.get(storeName);
+//            if (existingStore == null) {
+//                HashMap<String,Object> placeInfo = searchStoreAddr(storeName);
+//                if(storeAddr==""){
+//                    storeAddr = (String) placeInfo.get("formattedAddress");
+//                }
+//                Store store = Store.builder()
+//                        .name(storeName)
+//                        .address(storeAddr)
+//                        .build();
+//
+//                if(placeInfo.get("x") != null && placeInfo.get("y") != null) {
+//                    double x = (double) placeInfo.get("x");
+//                    double y = (double) placeInfo.get("y");
+//                    store.setX(x);
+//                    store.setY(y);
+//                }
+//                storeRepository.save(store);
+//
+//                newFavorites.add(Favorite.builder()
+//                        .store(store)
+//                        .users(nowUser)
+//                        .build());
+//            } else {
+//                if (!favoriteRepository.existsByStoreAndUsers(existingStore, nowUser)) {
+//                    newFavorites.add(Favorite.builder()
+//                            .store(existingStore)
+//                            .users(nowUser)
+//                            .build());
+//                }
+//            }
+//        }
+//        favoriteRepository.saveAll(newFavorites);
     }
     @Async
     public void deleteConnectedID(Users nowUser,OwnedCard ownedCard) throws CustomException {
@@ -146,7 +139,6 @@ public class CODEFAsyncService {
             if(card.isMain()==true) {
                 // 실적 업데이트
                 HashMap<String,Object> performResult = codefapi.Performace(card.getCard().getCardCompany().getCode(), nowUser.getConnectedId(), card.getCard().getName());
-
                 int performanceCondition = (int) performResult.get("performanceCondition");
                 int currentPerformance = (int) performResult.get("currentPerformance");
                 card.setPerformanceCondition(performanceCondition);

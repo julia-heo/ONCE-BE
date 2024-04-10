@@ -22,9 +22,8 @@ public class Favorite extends BaseEntity {
     @JoinColumn(name = "userId")
     private Users users;
 
-    @ManyToOne
-    @JoinColumn(name = "storeId")
-    private Store store;
+    @Column(name = "name",nullable = false)
+    private String name;
 
 
 }

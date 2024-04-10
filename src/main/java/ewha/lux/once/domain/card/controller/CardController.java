@@ -15,7 +15,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 
 @Controller
 @RestController
@@ -118,4 +117,16 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] 카드사 연결 현황
+    @GetMapping("/connect")
+    @ResponseBody
+    public CommonResponse<?> checkConnectedCardCompany (@AuthenticationPrincipal UserAccount user) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS,cardService.getConnectedCardCompany(user.getUsers()));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
 }
