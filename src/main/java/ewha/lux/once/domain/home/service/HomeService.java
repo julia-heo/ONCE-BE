@@ -53,7 +53,7 @@ public class HomeService {
             benefit = (String) map.get("혜택 정보");
             discount = (Integer) map.get("할인 금액");
 
-        } catch ( JsonProcessingException e) {
+        } catch (JsonProcessingException e) {
             throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
         }
 
@@ -145,6 +145,10 @@ public class HomeService {
             String keyword = chatHistory.getKeyword();
             keywordFrequencyMap.put(keyword, keywordFrequencyMap.getOrDefault(keyword, 0) + 1);
         }
+
+        int ownedCardCount = ownedCardRepository.countAllByUsers(nowUser);
+
+
         // 빈도수가 높은 순서로 정렬
         List<String> topKeywords = keywordFrequencyMap.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
@@ -156,7 +160,7 @@ public class HomeService {
             topKeywords.add(defaultKeywords.get(topKeywords.size()));
         }
 
-        return new HomeDto(nowUser.getNickname(), topKeywords);
+        return new HomeDto(nowUser.getNickname(), ownedCardCount, topKeywords);
 
     }
 
