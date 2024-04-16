@@ -72,15 +72,13 @@ public class HomeService {
         // Chat 객체 저장
         ChatHistory savedChat = chatHistoryRepository.save(chat);
 
-        //사용자 보유 카드 수
-        int ownedCardCount = ownedCardRepository.countAllByUsers(nowUser);
 
         // 챗봇 응답
         ChatDto chatDto = ChatDto.builder()
                 .nickname(nowUser.getNickname())
-                .ownedCardCount(ownedCardCount)
                 .chatId(savedChat.getId())
                 .cardName(card.getName())
+                .cardCompany(card.getCardCompany().getName())
                 .cardImg(card.getImgUrl())
                 .benefit(benefit)
                 .discount(discount)
