@@ -154,9 +154,10 @@ public class HomeService {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
         List<String> defaultKeywords = List.of("배달의 민족", "스타벅스", "GS25"); // 고정 키워드
-        while (topKeywords.size() < 3) {
-            topKeywords.add(defaultKeywords.get(topKeywords.size()));
-        }
+        defaultKeywords.stream()
+                .filter(keyword -> !topKeywords.contains(keyword))
+                .limit(3 - topKeywords.size())
+                .forEach(topKeywords::add);
 
         return new HomeDto(nowUser.getNickname(), ownedCardCount, topKeywords);
 
