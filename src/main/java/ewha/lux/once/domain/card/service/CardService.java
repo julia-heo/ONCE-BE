@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ewha.lux.once.domain.home.service.HomeService.getCategory;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -50,7 +52,8 @@ public class CardService {
                     List<BenefitSummary> cardSummary = benefitSummaryRepository.findByCard(ownedCard.getCard());
                     List<MyWalletResponseDto.CardBenefitListDto> cardBenefitList = new ArrayList<>();
                     for (BenefitSummary summary : cardSummary) {
-                        cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(summary.getBenefitField(), summary.getBenefitContents()));
+                        String category= getCategory(summary.getBenefitField()+summary.getBenefitContents());
+                        cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(category,summary.getBenefitField(), summary.getBenefitContents()));
                     }
                     return new MyWalletResponseDto.OwnedCardListDto(
                             ownedCard.getId(),
@@ -144,7 +147,7 @@ public class CardService {
             if (parts.length == 2) {
                 String category = parts[0].trim();
                 String benefit = parts[1].trim();
-                cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(category, benefit));
+                cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto("카테고리",category, benefit));
             }
         }
         return cardBenefitList;

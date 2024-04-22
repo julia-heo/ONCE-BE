@@ -91,13 +91,13 @@ public class HomeService {
      *  카테고리 처리 함수
      *  @param keyword
      */
-    private static String getCategory(String keyword) {
+    public static String getCategory(String keyword) {
 
         String[] convenienceStoreKeywords = {"편의점", "CU", "씨유", "GS25", "지에스", "세븐일레븐", "이마트24", "미니스톱"};
-        String[] culturalKeywords = {"문화", "영화", "CGV", "씨지브이", "씨지비", "메가박스", "megabox", "롯데시네마", "OTT", "오티티", "넷플릭스", "netflix", "티빙", "tving", "디즈니플러스", "disney", "웨이브", "wavve", "왓챠", "watcha", "쿠팡플레이"};
+        String[] culturalKeywords = {"문화", "영화", "CGV", "씨지브이", "씨지비", "메가박스", "megabox", "롯데시네마", "OTT", "오티티", "넷플릭스", "netflix", "티빙", "tving", "디즈니플러스", "disney", "웨이브", "wavve", "왓챠", "watcha", "쿠팡플레이", "스포츠","놀이공원","에버랜드","롯데월드"};
         String[] cafeKeywords = {"카페", "커피", "cafe", "coffee", "스타벅스", "starbucks", "빽다방", "폴바셋", "커피빈", "투썸플레이스", "컴포즈", "매머드커피", "메가커피", "카페봄봄", "공차", "이디야"};
         String[] transportationKeywords = {"교통", "지하철", "택시", "버스", "bus", "기차", "티머니", "KTX", "무궁화호"};
-        String[] shoppingKeywords = {"쇼핑", "백화점", "현대백화점", "롯데백화점", "신세계백화점", "롯데마트", "이마트", "emart", "홈플러스", "homeplus", "롯데몰", "스타필드", "아울렛", "쿠팡", "coupang", "G마켓", "11번가", "네이버쇼핑", "마켓컬리", "배달의민족", "요기요", "배달",};
+        String[] shoppingKeywords = {"쇼핑", "백화점", "현대백화점", "롯데백화점", "신세계백화점", "롯데마트", "이마트", "emart", "홈플러스", "homeplus", "롯데몰", "스타필드", "아울렛", "쿠팡", "coupang", "G마켓", "11번가", "네이버쇼핑", "마켓컬리", "배달의민족", "요기요", "배달","서점","올리브영"};
         String[] bakeryKeywords = {"베이커리", "빵", "bread", "bakery", "파리바게트", "뚜레쥬르", "성심당", "앤티앤스", "홍종흔베이커리", "아우어베이커리"};
 
         for (String key : convenienceStoreKeywords) {
