@@ -41,6 +41,7 @@ public class MyWalletResponseDto {
     @Builder
     public static class CardBenefitListDto {
         private String category;
+        private String name;
         private String benefit;
     }
 }
