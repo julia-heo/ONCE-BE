@@ -82,6 +82,7 @@ public class HomeService {
         // Chat 객체 저장
         ChatHistory savedChat = chatHistoryRepository.save(chat);
 
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardIdAndUsers(Long.valueOf(cardId),nowUser);
 
         // 챗봇 응답
         ChatDto chatDto = ChatDto.builder()
@@ -92,6 +93,7 @@ public class HomeService {
                 .cardImg(card.getImgUrl())
                 .benefit(benefit)
                 .discount(discount)
+                .isMain(ownedCard.isMain())
                 .build();
 
         return chatDto;
