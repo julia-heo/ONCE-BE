@@ -28,6 +28,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ewha.lux.once.domain.home.service.HomeService.getCategory;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -58,11 +60,13 @@ public class CardService {
                     List<BenefitSummary> cardSummary = benefitSummaryRepository.findByCard(ownedCard.getCard());
                     List<MyWalletResponseDto.CardBenefitListDto> cardBenefitList = new ArrayList<>();
                     for (BenefitSummary summary : cardSummary) {
-                        cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(summary.getBenefitField(), summary.getBenefitContents()));
+                        String category= getCategory(summary.getBenefitField()+summary.getBenefitContents());
+                        cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(category,summary.getBenefitField(), summary.getBenefitContents()));
                     }
                     return new MyWalletResponseDto.OwnedCardListDto(
                             ownedCard.getId(),
                             ownedCard.getCard().getName(),
+                            ownedCard.getCard().getCardCompany().getName(),
                             ownedCard.getCard().getType().ordinal(),
                             ownedCard.getCard().getImgUrl(),
                             ownedCard.isMain(),
@@ -75,6 +79,7 @@ public class CardService {
                 .toList();
 
         return MyWalletResponseDto.MyWalletProfileDto.builder()
+                .nickname(nowUser.getNickname())
                 .ownedCardList(ownedCardList)
                 .build();
     }
@@ -126,6 +131,7 @@ public class CardService {
                 ))
                 .collect(Collectors.toList());
 
+
         return MontlyBenefitResponseDto.MontlyBenefitProfileDto.builder()
                 .month(month)
                 .receivedSum(receivedSum)
@@ -149,7 +155,7 @@ public class CardService {
             if (parts.length == 2) {
                 String category = parts[0].trim();
                 String benefit = parts[1].trim();
-                cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto(category, benefit));
+                cardBenefitList.add(new MyWalletResponseDto.CardBenefitListDto("카테고리",category, benefit));
             }
         }
         return cardBenefitList;
@@ -241,7 +247,7 @@ public class CardService {
     }
 
     // 매주 월요일 04:00 AM 카드 혜택 정보 요약 작업
-    @Scheduled(cron = "0 0 4 ? * 1")
+//    @Scheduled(cron = "0 0 4 ? * 1")
     public void updateBenefitSummary() throws CustomException, JsonProcessingException {
 
         List<Card> cardList = cardRepository.findAll();
@@ -285,4 +291,82 @@ public class CardService {
                 .collect(Collectors.toList());
         return responseDtoList;
     }
+
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    // GET /card/test/summary : 전체 카드 혜택 요약
+    public void updateBenefitSummaryTest(String prompt, String model_name) throws CustomException, JsonProcessingException {
+
+        List<Card> cardList = cardRepository.findAll();
+
+        int index = 1;
+        for (Card card : cardList) {
+            // 기존의 BenefitSummary 삭제
+            List<BenefitSummary> existingSummaries = benefitSummaryRepository.findByCard(card);
+            benefitSummaryRepository.deleteAll(existingSummaries);
+
+            log.info("[" + card.getName() + "] - 카드 혜택 요약 중... (" + index + "/" + cardList.size() + ")");
+
+            BenefitDto[] benefitJson = openaiService.gptBenefitSummaryTest(card.getBenefits(), prompt, model_name);
+
+            if (benefitJson == null) {
+                System.out.println("===========PASS=========" + card.getName());
+//                cardRepository.delete(card);
+                continue;
+            }
+            for (BenefitDto benefit : benefitJson) {
+                BenefitSummary benefitSummary = BenefitSummary.builder()
+                        .benefitField(benefit.getBenefit_field())
+                        .benefitContents(benefit.getContent())
+                        .card(card)
+                        .build();
+
+                benefitSummaryRepository.save(benefitSummary);
+            }
+            index++;
+        }
+        log.info("전체 카드 혜택 요약 완료");
+    }
+
+    /*
+        GET /card/test/summary/index : 일부 카드 혜택 요약
+        "prompt": 프롬프트 내용,
+        "model_name": open_ai model,
+        "start_index": 시작 인덱스,
+        "end_index": 종료 인덱스 (포함)
+     */
+    public void updateBenefitSummaryTestByIndex(String prompt, String model_name, long start_index, long end_index) throws CustomException, JsonProcessingException {
+
+        List<Card> cardList = cardRepository.findByIdBetween(start_index, end_index);
+
+
+        int index = 1;
+        for (Card card : cardList) {
+            // 기존의 BenefitSummary 삭제
+            List<BenefitSummary> existingSummaries = benefitSummaryRepository.findByCard(card);
+            benefitSummaryRepository.deleteAll(existingSummaries);
+
+            log.info("[" + card.getName() + " (card_id=" + card.getId() + ")] - 카드 혜택 요약 중... (" + index + "/" + cardList.size() + ")");
+
+            BenefitDto[] benefitJson = openaiService.gptBenefitSummaryTest(card.getBenefits(), prompt, model_name);
+
+            if (benefitJson == null) {
+                System.out.println("===========PASS=========" + card.getName());
+//                cardRepository.delete(card);
+                continue;
+            }
+            for (BenefitDto benefit : benefitJson) {
+                BenefitSummary benefitSummary = BenefitSummary.builder()
+                        .benefitField(benefit.getBenefit_field())
+                        .benefitContents(benefit.getContent())
+                        .card(card)
+                        .build();
+
+                benefitSummaryRepository.save(benefitSummary);
+            }
+            index++;
+        }
+        log.info("일부 카드 혜택 요약 완료");
+    }
+    // ============================================================
+
 }

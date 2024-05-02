@@ -1,9 +1,12 @@
 package ewha.lux.once.domain.home.service;
 
+
 import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
 import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
 import ewha.lux.once.domain.card.dto.Place;
 import ewha.lux.once.domain.card.dto.SearchStoresResponseDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.*;
@@ -48,13 +51,21 @@ public class HomeService {
 
         // 2. GPT 사용하는 경우
         String response = openaiService.cardRecommend(nowUser, keyword, paymentAmount);
-        String[] results = response.split(",");
+        ObjectMapper objectMapper = new ObjectMapper();
+        Integer cardId;
+        Card card;
+        String benefit;
+        Integer discount;
+        try {
+            Map<String, Object> map = objectMapper.readValue(response, Map.class);
+            cardId = (Integer) map.get("카드번호");
+            card = cardRepository.findById(Long.valueOf(cardId)).orElse(null);
+            benefit = (String) map.get("혜택 정보");
+            discount = (Integer) map.get("할인 금액");
 
-        Long cardId = Long.valueOf(results[0].trim());
-        Card card = cardRepository.findById(cardId).orElse(null);
-        String benefit = results[1].trim();
-        Integer discount = Integer.valueOf(results[2].trim());
-
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
+        }
 
         // 챗봇 대화 기록
         ChatHistory chat = ChatHistory.builder()
@@ -71,15 +82,13 @@ public class HomeService {
         // Chat 객체 저장
         ChatHistory savedChat = chatHistoryRepository.save(chat);
 
-        //사용자 보유 카드 수
-        int ownedCardCount = ownedCardRepository.countAllByUsers(nowUser);
 
         // 챗봇 응답
         ChatDto chatDto = ChatDto.builder()
                 .nickname(nowUser.getNickname())
-                .ownedCardCount(ownedCardCount)
                 .chatId(savedChat.getId())
                 .cardName(card.getName())
+                .cardCompany(card.getCardCompany().getName())
                 .cardImg(card.getImgUrl())
                 .benefit(benefit)
                 .discount(discount)
@@ -92,13 +101,13 @@ public class HomeService {
      *  카테고리 처리 함수
      *  @param keyword
      */
-    private static String getCategory(String keyword) {
+    public static String getCategory(String keyword) {
 
         String[] convenienceStoreKeywords = {"편의점", "CU", "씨유", "GS25", "지에스", "세븐일레븐", "이마트24", "미니스톱"};
-        String[] culturalKeywords = {"문화", "영화", "CGV", "씨지브이", "씨지비", "메가박스", "megabox", "롯데시네마", "OTT", "오티티", "넷플릭스", "netflix", "티빙", "tving", "디즈니플러스", "disney", "웨이브", "wavve", "왓챠", "watcha", "쿠팡플레이"};
+        String[] culturalKeywords = {"문화", "영화", "CGV", "씨지브이", "씨지비", "메가박스", "megabox", "롯데시네마", "OTT", "오티티", "넷플릭스", "netflix", "티빙", "tving", "디즈니플러스", "disney", "웨이브", "wavve", "왓챠", "watcha", "쿠팡플레이", "스포츠","놀이공원","에버랜드","롯데월드"};
         String[] cafeKeywords = {"카페", "커피", "cafe", "coffee", "스타벅스", "starbucks", "빽다방", "폴바셋", "커피빈", "투썸플레이스", "컴포즈", "매머드커피", "메가커피", "카페봄봄", "공차", "이디야"};
         String[] transportationKeywords = {"교통", "지하철", "택시", "버스", "bus", "기차", "티머니", "KTX", "무궁화호"};
-        String[] shoppingKeywords = {"쇼핑", "백화점", "현대백화점", "롯데백화점", "신세계백화점", "롯데마트", "이마트", "emart", "홈플러스", "homeplus", "롯데몰", "스타필드", "아울렛", "쿠팡", "coupang", "G마켓", "11번가", "네이버쇼핑", "마켓컬리", "배달의민족", "요기요", "배달",};
+        String[] shoppingKeywords = {"쇼핑", "백화점", "현대백화점", "롯데백화점", "신세계백화점", "롯데마트", "이마트", "emart", "홈플러스", "homeplus", "롯데몰", "스타필드", "아울렛", "쿠팡", "coupang", "G마켓", "11번가", "네이버쇼핑", "마켓컬리", "배달의민족", "요기요", "배달","서점","올리브영"};
         String[] bakeryKeywords = {"베이커리", "빵", "bread", "bakery", "파리바게트", "뚜레쥬르", "성심당", "앤티앤스", "홍종흔베이커리", "아우어베이커리"};
 
         for (String key : convenienceStoreKeywords) {
@@ -144,6 +153,10 @@ public class HomeService {
             String keyword = chatHistory.getKeyword();
             keywordFrequencyMap.put(keyword, keywordFrequencyMap.getOrDefault(keyword, 0) + 1);
         }
+
+        int ownedCardCount = ownedCardRepository.countAllByUsers(nowUser);
+
+
         // 빈도수가 높은 순서로 정렬
         List<String> topKeywords = keywordFrequencyMap.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
@@ -151,11 +164,12 @@ public class HomeService {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
         List<String> defaultKeywords = List.of("배달의 민족", "스타벅스", "GS25"); // 고정 키워드
-        while (topKeywords.size() < 3) {
-            topKeywords.add(defaultKeywords.get(topKeywords.size()));
-        }
+        defaultKeywords.stream()
+                .filter(keyword -> !topKeywords.contains(keyword))
+                .limit(3 - topKeywords.size())
+                .forEach(topKeywords::add);
 
-        return new HomeDto(nowUser.getNickname(), topKeywords);
+        return new HomeDto(nowUser.getNickname(), ownedCardCount, topKeywords);
 
     }
 

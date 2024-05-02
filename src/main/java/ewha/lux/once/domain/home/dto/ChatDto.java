@@ -9,9 +9,9 @@ import lombok.*;
 public class ChatDto {
 
     private String nickname;
-    private int ownedCardCount;
     private Long chatId;
     private String cardName;
+    private String cardCompany;
     private String cardImg;
     private String benefit;
     private int discount;
