@@ -1,17 +1,15 @@
 package ewha.lux.once.domain.user.service;
 
-import ewha.lux.once.domain.card.entity.Card;
-import ewha.lux.once.domain.card.entity.CardCompany;
-import ewha.lux.once.domain.card.entity.CardType;
-import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.card.entity.*;
+import ewha.lux.once.domain.home.entity.Announcement;
+import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.home.entity.FCMToken;
+import ewha.lux.once.domain.home.entity.Favorite;
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.repository.CardCompanyRepository;
-import ewha.lux.once.global.repository.CardRepository;
-import ewha.lux.once.global.repository.OwnedCardRepository;
-import ewha.lux.once.global.repository.UsersRepository;
+import ewha.lux.once.global.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,6 +34,11 @@ public class UserService implements UserDetailsService {
     private final CardRepository cardRepository;
     private final CardCompanyRepository cardCompanyRepository;
     private final OwnedCardRepository ownedCardRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final ChatHistoryRepository chatHistoryRepository;
+    private final ConnectedCardCompanyRepository connectedCardCompanyRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final FCMTokenRepository fcmTokenRepository;
     private final S3Uploader s3Uploader;
 
     public Users signup(SignupRequestDto request) throws CustomException, ParseException {
@@ -94,6 +97,18 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUsers(Users nowUser) throws CustomException {
+        List <Announcement> announcementList = announcementRepository.findAnnouncementByUsers(nowUser);
+        announcementRepository.deleteAll(announcementList);
+        List <ChatHistory> chatHistoryList = chatHistoryRepository.findByUsers(nowUser);
+        chatHistoryRepository.deleteAll(chatHistoryList);
+        List <ConnectedCardCompany> connectedCardCompanyList = connectedCardCompanyRepository.findAllByUsers(nowUser);
+        connectedCardCompanyRepository.deleteAll(connectedCardCompanyList);
+        List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByUsers(nowUser);
+        ownedCardRepository.deleteAll(ownedCardList);
+        List <Favorite> favoriteList = favoriteRepository.findAllByUsers(nowUser).get();
+        favoriteRepository.deleteAll(favoriteList);
+        List <FCMToken> fcmTokenList = fcmTokenRepository.findAllByUsers(nowUser);
+        fcmTokenRepository.deleteAll(fcmTokenList);
         usersRepository.delete(nowUser);
         return;
     }
