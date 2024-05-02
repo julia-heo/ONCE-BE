@@ -1,29 +1,32 @@
-package ewha.lux.once.domain.home.entity;
+package ewha.lux.once.domain.card.entity;
 
 import ewha.lux.once.domain.user.entity.Users;
-import ewha.lux.once.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name="Favorite")
+@Table(name="ConnectedCardCompany")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Favorite extends BaseEntity {
+public class ConnectedCardCompany {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "favoriteId")
+    @Column(name = "connectedCardCompanyId")
     private Long id;
 
     @ManyToOne
     @JoinColumn(name = "userId")
     private Users users;
 
-    @Column(name = "name",nullable = false)
-    private String name;
+    @Column(name = "cardCompany", nullable = false)
+    private String cardCompany;
 
+    @Column(name = "name", nullable = false)
+    private LocalDateTime connectedAt;
 
 }

@@ -12,7 +12,7 @@ import lombok.ToString;
 public class Place {
     private String formattedAddress;
     private Location location;
-
+    private DisplayName displayName;
 
     @Getter
     @Setter
@@ -22,5 +22,13 @@ public class Place {
         private double latitude;
         private double longitude;
 
+    }
+    @Getter
+    @Setter
+    @ToString
+    @AllArgsConstructor
+    public static class DisplayName{
+        private String text;
+        private String languageCode;
     }
 }

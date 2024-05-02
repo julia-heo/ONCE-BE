@@ -1,5 +1,10 @@
 package ewha.lux.once.domain.home.service;
 
+
+import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
+import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
+import ewha.lux.once.domain.card.dto.Place;
+import ewha.lux.once.domain.card.dto.SearchStoresResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ewha.lux.once.domain.card.entity.Card;
@@ -7,15 +12,18 @@ import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.*;
 import ewha.lux.once.domain.home.entity.Announcement;
 import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.home.entity.Favorite;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.repository.AnnouncementRepository;
-import ewha.lux.once.global.repository.CardRepository;
-import ewha.lux.once.global.repository.ChatHistoryRepository;
-import ewha.lux.once.global.repository.OwnedCardRepository;
+import ewha.lux.once.global.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -24,12 +32,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class HomeService {
-
+    @Value("${google-map.api-key}")
+    private String apiKey;
+    private final RestTemplate restTemplate;
     private final CardRepository cardRepository;
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
     private final AnnouncementRepository announcementRepository;
-
+    private final FavoriteRepository favoriteRepository;
     private final GeminiService geminiService;
     private final OpenaiService openaiService;
 
@@ -233,5 +243,70 @@ public class HomeService {
         announcement.setHasCheck(true);
         announcementRepository.save(announcement);
         return new AnnounceDetailDto(announcement);
+    }
+    public List<SearchStoresResponseDto> searchStores(SearchStoresRequestDto dto, Users nowuser) throws CustomException {
+            // 단골가게 가져오기
+            List<Favorite> favorites = favoriteRepository.findAllByUsers(nowuser).get();
+            System.out.println(favorites);
+            if(favorites.isEmpty()){
+                throw new CustomException(ResponseCode.NO_FAVORITE_STORE);
+            }
+
+            double latitude = dto.getLatitude();
+            double longitude = dto.getLongitude();
+
+            // 단골 가게 검색 시작
+            String url = "https://places.googleapis.com/v1/places:searchText";
+            // headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("accept", "application/json");
+            headers.add("X-Goog-Api-Key", apiKey);
+            headers.add("X-Goog-FieldMask", "places.formattedAddress,places.location,places.displayName");
+
+            List<SearchStoresResponseDto> resultList = new ArrayList<>();
+
+            for (Favorite favorite : favorites) {
+                // request body
+                Map<String, Object> requestBody = new HashMap<String, Object>();
+                requestBody.put("textQuery", favorite.getName());
+                requestBody.put("maxResultCount", 10);
+                requestBody.put("languageCode", "ko");
+                Map<String, Object> locationBias = new HashMap<String, Object>();
+                Map<String, Object> circle = new HashMap<String, Object>();
+                Map<String, Object> center = new HashMap<String, Object>();
+                center.put("latitude", latitude);
+                center.put("longitude", longitude);
+                circle.put("center", center);
+                circle.put("radius", 500.0);
+                locationBias.put("circle", circle);
+                requestBody.put("locationBias", locationBias);
+
+                GoogleMapPlaceResponseDto responsebody;
+                try {
+
+                    HttpEntity<Map<String, Object>> requestData = new HttpEntity<>(requestBody, headers);
+                    ResponseEntity<GoogleMapPlaceResponseDto> responseEntity = restTemplate.postForEntity(url, requestData, GoogleMapPlaceResponseDto.class);
+                    responsebody = responseEntity.getBody();
+                } catch (Exception e){
+                    throw new CustomException(ResponseCode.GOOGLE_MAP_SEARCH_PLACE_FAIL);
+                }
+
+                if (responsebody.getPlaces() == null){
+                    throw new CustomException(ResponseCode.NO_SEARCHED_FAVORITE_STORE);
+                }
+
+                List<Place> placeList = responsebody.getPlaces();
+                for( Place place : placeList){
+                    SearchStoresResponseDto searchedResult = new SearchStoresResponseDto();
+
+                    searchedResult.setStore(favorite.getName());
+                    searchedResult.setStoreName(place.getDisplayName().getText());
+                    searchedResult.setLatitude(place.getLocation().getLatitude());
+                    searchedResult.setLongitude(place.getLocation().getLongitude());
+
+                    resultList.add(searchedResult);
+                }
+            }
+            return resultList;
     }
 }
