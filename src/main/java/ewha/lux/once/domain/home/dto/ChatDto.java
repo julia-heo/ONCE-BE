@@ -15,5 +15,5 @@ public class ChatDto {
     private String cardImg;
     private String benefit;
     private int discount;
-
+    private Boolean isMain;
 }
