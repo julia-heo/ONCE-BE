@@ -207,6 +207,7 @@ public class UserService implements UserDetailsService {
 
     public String patchChangePassword(Users nowUser, ChangePasswordDto changePasswordDto) throws CustomException {
         nowUser.updatePassword(passwordEncoder.encode(changePasswordDto.getPassword()));
+        usersRepository.save(nowUser);
         return ResponseCode.CHANGE_PW_SUCCESS.getMessage();
     }
 
