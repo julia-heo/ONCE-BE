@@ -110,7 +110,7 @@ public class CardController {
     }
 
     // [Get] CODEF 보유 카드 조회
-    @GetMapping("/list")
+    @PostMapping("/list")
     @ResponseBody
     public CommonResponse<?> codefCardList(@AuthenticationPrincipal UserAccount user, @RequestBody CodefCardListRequestDto codefCardListRequestDto) {
         try {
