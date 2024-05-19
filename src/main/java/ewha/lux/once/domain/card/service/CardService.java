@@ -246,8 +246,8 @@ public class CardService {
         codefAsyncService.updateOwnedCardsPerformanceCodef(nowUser);
     }
 
-    // 매주 월요일 04:00 AM 카드 혜택 정보 요약 작업
-//    @Scheduled(cron = "0 0 4 ? * 1")
+    // 매주 월요일 06:00 AM 카드 혜택 정보 요약 작업
+    @Scheduled(cron = "0 0 6 ? * 1")
     public void updateBenefitSummary() throws CustomException, JsonProcessingException {
 
         List<Card> cardList = cardRepository.findAll();

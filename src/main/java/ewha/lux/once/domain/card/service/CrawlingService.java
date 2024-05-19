@@ -21,8 +21,7 @@ public class CrawlingService {
     private static final Logger LOG = LoggerFactory.getLogger(CrawlingService.class);
 
     // 매주 월요일 00:00 카드 혜택 크롤링
-    // ** 크롤링 자동화 테스트 -ing ** =========
-    @Scheduled(cron = "0 40 9 ? * *")
+    @Scheduled(cron = "0 0 0 ? * 1")
     public void cardCrawling() throws CustomException {
         String[] cardCompanyList = {"Kookmin", "Hana", "Samsung", "Shinhan", "Lotte", "Hyundai"};
         for (String cardCompany : cardCompanyList){
