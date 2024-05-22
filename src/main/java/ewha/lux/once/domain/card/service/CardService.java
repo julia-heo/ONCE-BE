@@ -85,7 +85,7 @@ public class CardService {
     }
 
     public void postCardPerformance(Users nowUser, CardPerformanceRequestDto cardPerformanceRequestDto) throws CustomException {
-        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardIdAndUsers(cardPerformanceRequestDto.getOwnedCardId(), nowUser);
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByIdAndUsers(cardPerformanceRequestDto.getOwnedCardId(), nowUser);
         if (ownedCard != null) {
             ownedCard.setPerformanceCondition(cardPerformanceRequestDto.getPerformanceCondition());
             ownedCardRepository.save(ownedCard);
