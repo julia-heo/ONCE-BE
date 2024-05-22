@@ -13,7 +13,7 @@ public interface OwnedCardRepository extends JpaRepository<OwnedCard, Long> {
 
     OwnedCard findOwnedCardByCardAndUsers(Card card, Users users);
 
-    OwnedCard findOwnedCardByCardIdAndUsers(Long cardId, Users users);
+    OwnedCard findOwnedCardByCardIdAndUsers(Long ownedCardId, Users users);
 
     List<OwnedCard> findOwnedCardByUsers(Users nowUser);
 
