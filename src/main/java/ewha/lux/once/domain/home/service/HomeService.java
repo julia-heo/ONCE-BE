@@ -1,23 +1,22 @@
 package ewha.lux.once.domain.home.service;
 
-
-import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
-import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
-import ewha.lux.once.domain.card.dto.Place;
-import ewha.lux.once.domain.card.dto.SearchStoresResponseDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
+import ewha.lux.once.domain.card.dto.Place;
+import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
+import ewha.lux.once.domain.card.dto.SearchStoresResponseDto;
 import ewha.lux.once.domain.card.entity.Card;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.dto.*;
-import ewha.lux.once.domain.home.entity.Announcement;
-import ewha.lux.once.domain.home.entity.ChatHistory;
-import ewha.lux.once.domain.home.entity.Favorite;
+import ewha.lux.once.domain.home.entity.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,13 +34,18 @@ public class HomeService {
     @Value("${google-map.api-key}")
     private String apiKey;
     private final RestTemplate restTemplate;
+    private final FavoriteRepository favoriteRepository;
     private final CardRepository cardRepository;
     private final OwnedCardRepository ownedCardRepository;
     private final ChatHistoryRepository chatHistoryRepository;
     private final AnnouncementRepository announcementRepository;
-    private final FavoriteRepository favoriteRepository;
+
     private final GeminiService geminiService;
     private final OpenaiService openaiService;
+    private final FCMTokenRepository fcmTokenRepository;
+    private final FirebaseCloudMessageService firebaseCloudMessageService;
+    private final BeaconRepository beaconRepository;
+    private final CODEFAsyncService codefAsyncService;
 
     // 챗봇 카드 추천
     public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
@@ -310,5 +314,87 @@ public class HomeService {
                 }
             }
             return resultList;
+    }
+    public void postAnnounceFavorite(AnnounceFavoriteRequestDto dto, Users nowUser) throws CustomException {
+        List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(nowUser);
+        String keyword = dto.getStore();
+        int paymentAmount=10000;
+        String response = openaiService.cardRecommend(nowUser, keyword, paymentAmount);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Integer cardId;
+        Card card;
+        String benefit;
+        Integer discount;
+        try {
+            Map<String, Object> map = objectMapper.readValue(response, Map.class);
+            cardId = (Integer) map.get("카드번호");
+            card = cardRepository.findById(Long.valueOf(cardId)).orElse(null);
+            benefit = (String) map.get("혜택 정보");
+            discount = (Integer) map.get("할인 금액");
+
+        } catch ( JsonProcessingException e) {
+            throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
+        }
+
+        String contents = dto.getStoreName()+" 근처시군요.\n"+card.getName()+" 사용해 보세요!";
+        String title = dto.getStoreName()+" 근처시군요";
+        String content = card.getName()+" 사용해 보세요!";
+        String moreInfo = dto.getLatitude()+", "+dto.getLongitude();
+        Announcement announcement = Announcement.builder()
+                .users(nowUser)
+                .type(0)
+                .content(contents)
+                .moreInfo(moreInfo)
+                .hasCheck(false)
+                .build();
+        announcementRepository.save(announcement);
+        for ( FCMToken fcmToken : fcmTokens){
+
+            String token = fcmToken.getToken();
+            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content));
+        }
+    }
+    public void postBeaconAnnouncement(BeaconRequestDto dto, Users nowUser)throws CustomException {
+        List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(nowUser);
+
+        Beacon beacon = beaconRepository.findAllByProximityUUIDAndMajorAndMinor(dto.getProximityUUID(),dto.getMajor(),dto.getMinor());
+
+        String keyword = beacon.getName();
+        int paymentAmount=10000;
+        String response = openaiService.cardRecommend(nowUser, keyword, paymentAmount);
+        ObjectMapper objectMapper = new ObjectMapper();
+        Integer cardId;
+        Card card;
+        String benefit;
+        Integer discount;
+        try {
+            Map<String, Object> map = objectMapper.readValue(response, Map.class);
+            cardId = (Integer) map.get("카드번호");
+            card = cardRepository.findById(Long.valueOf(cardId)).orElse(null);
+            benefit = (String) map.get("혜택 정보");
+            discount = (Integer) map.get("할인 금액");
+
+        } catch ( JsonProcessingException e) {
+            throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
+        }
+
+        String title = beacon.getStore()+" 근처시군요";
+        String content = card.getName()+" 사용해 보세요!";
+        String contents = beacon.getStore()+" 근처시군요.\n"+card.getName()+" 사용해 보세요!";
+
+        String moreInfo = beacon.getLatitude()+", "+beacon.getLongitude();
+        Announcement announcement = Announcement.builder()
+                .users(nowUser)
+                .type(0)
+                .content(contents)
+                .moreInfo(moreInfo)
+                .hasCheck(false)
+                .build();
+        announcementRepository.save(announcement);
+        for ( FCMToken fcmToken : fcmTokens){
+            String token = fcmToken.getToken();
+            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content));
+        }
+
     }
 }
