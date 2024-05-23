@@ -3,6 +3,9 @@ package ewha.lux.once.domain.home.service;
 import ewha.lux.once.domain.card.dto.Place;
 import ewha.lux.once.domain.card.dto.GoogleMapPlaceResponseDto;
 import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.home.dto.OpenaiChatRequest;
+import ewha.lux.once.domain.home.dto.OpenaiChatResponse;
+import ewha.lux.once.domain.home.entity.Favorite;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
@@ -10,6 +13,8 @@ import ewha.lux.once.global.repository.FavoriteRepository;
 import ewha.lux.once.global.repository.OwnedCardRepository;
 import ewha.lux.once.global.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,58 +35,41 @@ public class CODEFAsyncService {
     private final CODEFAPIService codefapi;
     private final FavoriteRepository favoriteRepository;
     private final UsersRepository usersRepository;
-    private final RestTemplate restTemplate;
+    //    private final RestTemplate restTemplate;
     private final OwnedCardRepository ownedCardRepository;
+
+    @Value("${openai.api.url}")
+    private String apiUrl;
+
+    @Qualifier("openaiRestTemplate")
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Async
     public void saveFavorite(String code, String connectedId, OwnedCard ownedCard, Users nowUser, String cardNo) throws CustomException {
-//        // 승인 내역 조회 -> 단골 가게 카드별 5개
-//        List<String> favorites = codefapi.GetHistory(code,connectedId,ownedCard.getCard().getName(),cardNo);
-//
-//        Map<String, Store> existingStores = storeRepository.findByNameIn(favorites.stream()
-//                        .map(favorite -> favorite.split("#")[0])
-//                        .collect(Collectors.toList()))
-//                .stream()
-//                .collect(Collectors.toMap(Store::getName, Function.identity()));
-//
-//        List<Favorite> newFavorites = new ArrayList<>();
-//        for (String favorite : favorites) {
-//            String[] parts = favorite.split("#");
-//            String storeName = parts[0];
-//            String storeAddr = (parts.length > 1) ? parts[1] : "";
-//
-//            Store existingStore = existingStores.get(storeName);
-//            if (existingStore == null) {
-//                HashMap<String,Object> placeInfo = searchStoreAddr(storeName);
-//                if(storeAddr==""){
-//                    storeAddr = (String) placeInfo.get("formattedAddress");
-//                }
-//                Store store = Store.builder()
-//                        .name(storeName)
-//                        .address(storeAddr)
-//                        .build();
-//
-//                if(placeInfo.get("x") != null && placeInfo.get("y") != null) {
-//                    double x = (double) placeInfo.get("x");
-//                    double y = (double) placeInfo.get("y");
-//                    store.setX(x);
-//                    store.setY(y);
-//                }
-//                storeRepository.save(store);
-//
-//                newFavorites.add(Favorite.builder()
-//                        .store(store)
-//                        .users(nowUser)
-//                        .build());
-//            } else {
-//                if (!favoriteRepository.existsByStoreAndUsers(existingStore, nowUser)) {
-//                    newFavorites.add(Favorite.builder()
-//                            .store(existingStore)
-//                            .users(nowUser)
-//                            .build());
-//                }
-//            }
-//        }
-//        favoriteRepository.saveAll(newFavorites);
+        // 승인 내역 조회 -> 단골 가게 카드별 10개
+        List<String> favorites = codefapi.GetHistory(code,connectedId,ownedCard.getCard().getName(),cardNo);
+
+        String system ="입력받은 가맹점명에서 브랜드 이름을 찾아서 뽑아줘. 출력은 단어만, 알아낼 수 없다면 null을 반환해줘.";
+        for (String keyword : favorites){
+            OpenaiChatRequest request = new OpenaiChatRequest("gpt-4-turbo", system, keyword);
+            OpenaiChatResponse response = restTemplate.postForObject(apiUrl, request, OpenaiChatResponse.class);
+            if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+                throw new CustomException(ResponseCode.FAILED_TO_OPENAI);
+            }
+            String result = response.getChoices().get(0).getMessage().getContent();
+            System.out.println(result);
+            if (!"null".equals(result)) {
+                boolean exists = favoriteRepository.existsByNameAndUsers(result,nowUser);
+                if (!exists) {
+                    Favorite favorite = Favorite.builder()
+                            .users(nowUser)
+                            .name(result)
+                            .build();
+                    favoriteRepository.save(favorite);
+                }
+            }
+        }
     }
     @Async
     public void deleteConnectedID(Users nowUser,OwnedCard ownedCard) throws CustomException {
