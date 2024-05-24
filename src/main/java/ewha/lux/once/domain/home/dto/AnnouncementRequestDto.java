@@ -11,4 +11,5 @@ public class AnnouncementRequestDto {
     private String targetToken;
     private String title;
     private String body;
+    private String announceId;
 }

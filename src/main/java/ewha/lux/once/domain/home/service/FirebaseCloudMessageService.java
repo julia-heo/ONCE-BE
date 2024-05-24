@@ -29,6 +29,7 @@ public class FirebaseCloudMessageService {
         Message message = Message.builder()
                 .setToken(requestDTO.getTargetToken())
                 .setNotification(notification)
+                .putData("announceId",requestDTO.getAnnounceId() )
                 .build();
         try {
             firebaseMessaging.send(message);
