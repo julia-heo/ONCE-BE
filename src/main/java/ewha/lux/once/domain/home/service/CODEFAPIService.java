@@ -254,8 +254,8 @@ public class CODEFAPIService {
             for (Object obj : dataArray) {
                 JSONObject dataObject = (JSONObject) obj;
                 String storeName = (String) dataObject.get("resMemberStoreName");
-                String storeAddr = (String) dataObject.get("resMemberStoreAddr");
-                String storeKey = storeName + "#" + storeAddr; // 고유 키 생성
+//                String storeAddr = (String) dataObject.get("resMemberStoreAddr");
+                String storeKey = storeName; // 고유 키 생성
 
                 // 맵에 있는지 확인하고 카운트 업데이트
                 storeCountMap.put(storeKey, storeCountMap.getOrDefault(storeKey, 0) + 1);
@@ -265,11 +265,11 @@ public class CODEFAPIService {
             List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(storeCountMap.entrySet());
             sortedEntries.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
-            // 상위 5개의 매장 정보 추출
+            // 상위 10개의 매장 정보 추출
             List<String> topStores = new ArrayList<>();
             int count = 0;
             for (Map.Entry<String, Integer> entry : sortedEntries) {
-                if (count >= 5) break;
+                if (count >= 10) break;
                 topStores.add(entry.getKey());
                 count++;
             }

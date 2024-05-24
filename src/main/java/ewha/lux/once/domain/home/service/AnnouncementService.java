@@ -78,13 +78,14 @@ public class AnnouncementService {
             List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
             for ( FCMToken fcmToken : fcmTokens){
                 String token = fcmToken.getToken();
-                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"ONCE",content));
+                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"목표 응원 알림",content));
             }
         }
     }
 
     @Scheduled(cron = "0 0 21 10,15,25 * ?")
     public void cardPerformanceAnnounce() throws CustomException {
+        String currentDate = String.valueOf(LocalDate.now().getMonthValue());;
         List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByIsMain(true);
         for (OwnedCard card : ownedCardList) {
             // 실적 업데이트
@@ -97,12 +98,12 @@ public class AnnouncementService {
 
             ownedCardRepository.save(card);
             String res = String.valueOf(Math.max(card.getPerformanceCondition()-card.getCurrentPerformance(),0));
-            String content = "이번 달 "+card.getCard().getName()+" 실적까지 "+res+"원 남았어요!";
+            String content = "이번 달 "+card.getCard().getName()+" 실적까지\n"+res+"원 남았어요!";
             String moreInfo = card.getCard().getImgUrl();
 
             Announcement announcement = Announcement.builder()
                     .users(users)
-                    .type(1)
+                    .type(3)
                     .content(content)
                     .moreInfo(moreInfo)
                     .hasCheck(false)
@@ -111,7 +112,7 @@ public class AnnouncementService {
             List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
             for ( FCMToken fcmToken : fcmTokens){
                 String token = fcmToken.getToken();
-                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"ONCE",content));
+                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,currentDate+"월 실적 알림",content));
             }
 
         }

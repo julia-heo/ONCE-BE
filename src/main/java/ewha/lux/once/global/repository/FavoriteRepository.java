@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     Optional<List<Favorite>> findAllByUsers(Users users);
+    Boolean existsByNameAndUsers(String name, Users users);
 }
