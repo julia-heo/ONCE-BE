@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -45,7 +43,6 @@ public class HomeService {
     private final FCMTokenRepository fcmTokenRepository;
     private final FirebaseCloudMessageService firebaseCloudMessageService;
     private final BeaconRepository beaconRepository;
-    private final CODEFAsyncService codefAsyncService;
 
     // 챗봇 카드 추천
     public ChatDto getHomeChat(Users nowUser, String keyword, int paymentAmount) throws CustomException {
@@ -337,7 +334,7 @@ public class HomeService {
         }
 
         String contents = dto.getStoreName()+" 근처시군요.\n"+card.getName()+" 사용해 보세요!";
-        String title = dto.getStoreName()+" 근처시군요";
+        String title = dto.getStoreName()+" 근처시군요.";
         String content = card.getName()+" 사용해 보세요!";
         String moreInfo = dto.getLatitude()+", "+dto.getLongitude();
         Announcement announcement = Announcement.builder()
@@ -351,7 +348,7 @@ public class HomeService {
         for ( FCMToken fcmToken : fcmTokens){
 
             String token = fcmToken.getToken();
-            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content));
+            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content,announcement.getId().toString()));
         }
     }
     public void postBeaconAnnouncement(BeaconRequestDto dto, Users nowUser)throws CustomException {
@@ -378,7 +375,7 @@ public class HomeService {
             throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
         }
 
-        String title = beacon.getStore()+" 근처시군요";
+        String title = beacon.getStore()+" 근처시군요.";
         String content = card.getName()+" 사용해 보세요!";
         String contents = beacon.getStore()+" 근처시군요.\n"+card.getName()+" 사용해 보세요!";
 
@@ -393,7 +390,7 @@ public class HomeService {
         announcementRepository.save(announcement);
         for ( FCMToken fcmToken : fcmTokens){
             String token = fcmToken.getToken();
-            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content));
+            firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,title,content,announcement.getId().toString()));
         }
 
     }

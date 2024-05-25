@@ -78,7 +78,7 @@ public class AnnouncementService {
             List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
             for ( FCMToken fcmToken : fcmTokens){
                 String token = fcmToken.getToken();
-                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"목표 응원 알림",content));
+                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,"목표 응원 알림",content,announcement.getId().toString()));
             }
         }
     }
@@ -112,7 +112,7 @@ public class AnnouncementService {
             List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
             for ( FCMToken fcmToken : fcmTokens){
                 String token = fcmToken.getToken();
-                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,currentDate+"월 실적 알림",content));
+                firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,currentDate+"월 실적 알림",content,announcement.getId().toString()));
             }
 
         }
