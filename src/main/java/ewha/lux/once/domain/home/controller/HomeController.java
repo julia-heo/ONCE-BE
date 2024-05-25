@@ -72,8 +72,8 @@ public class HomeController {
         }
     }
 
-    // [Get] 사용자 근처 단골가게 조회
-    @GetMapping("/gps")
+    // [Post] 사용자 근처 단골가게 조회
+    @PostMapping("/gps")
     @ResponseBody
     public CommonResponse<?> nearFavorite(@AuthenticationPrincipal UserAccount user, @RequestBody SearchStoresRequestDto nearFavoriteRequestDto){
         try {

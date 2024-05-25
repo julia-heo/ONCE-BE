@@ -250,7 +250,7 @@ public class HomeService {
     public List<SearchStoresResponseDto> searchStores(SearchStoresRequestDto dto, Users nowuser) throws CustomException {
             // 단골가게 가져오기
             List<Favorite> favorites = favoriteRepository.findAllByUsers(nowuser).get();
-            System.out.println(favorites);
+
             if(favorites.isEmpty()){
                 throw new CustomException(ResponseCode.NO_FAVORITE_STORE);
             }
@@ -293,7 +293,7 @@ public class HomeService {
                 } catch (Exception e){
                     throw new CustomException(ResponseCode.GOOGLE_MAP_SEARCH_PLACE_FAIL);
                 }
-
+                System.out.println(responsebody);
                 if (responsebody.getPlaces() == null){
                     throw new CustomException(ResponseCode.NO_SEARCHED_FAVORITE_STORE);
                 }
