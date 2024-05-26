@@ -78,7 +78,6 @@ public class OpenaiService {
         }
 
         String result = response.getChoices().get(0).getMessage().getContent();
-
         log.info(result);
 
         return result;

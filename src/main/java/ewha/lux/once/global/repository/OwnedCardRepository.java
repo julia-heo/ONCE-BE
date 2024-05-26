@@ -22,4 +22,6 @@ public interface OwnedCardRepository extends JpaRepository<OwnedCard, Long> {
     List<OwnedCard> findOwnedCardByIsMain(boolean isMain);
 
     Optional<OwnedCard> findOwnedCardByUsersAndCard(Users users, Card card);
+
+    List<OwnedCard> findOwnedCardByUsersAndIsMain(Users nowUser, boolean isMain);
 }
