@@ -57,8 +57,10 @@ public class AnnouncementService {
 
             int remainBenefit = Math.max(goalBenefitGoal - receivedBenefit, 0);
             if (remainBenefit == 0){
+                // 목표 달성한 경우 알림을 보내지 않음
                 content = currentDate + "월 목표를 달성했어요!";
                 moreInfo = "100";
+                continue;
             } else {
                 content = currentDate + "월 목표 혜택 달성까지 " + String.format("%,d", remainBenefit) + "원 남았어요.";
                 if(goalBenefitGoal==0) moreInfo="100";
@@ -90,6 +92,7 @@ public class AnnouncementService {
         for (OwnedCard card : ownedCardList) {
             // 실적 업데이트
             Users users = card.getUsers();
+            if(users.getConnectedId()==null) continue;
             HashMap<String,Object> performResult = codefapi.Performace(card.getCard().getCardCompany().getCode(),users.getConnectedId(),card.getCard().getName()); //?????
             int performanceCondition = (int) performResult.get("performanceCondition");
             int currentPerformance = (int) performResult.get("performanceCondition");
@@ -98,6 +101,10 @@ public class AnnouncementService {
 
             ownedCardRepository.save(card);
             String res = String.valueOf(Math.max(card.getPerformanceCondition()-card.getCurrentPerformance(),0));
+            if(res == "0"){
+                // 실적 완료한 경우 알림을 보내지 않음
+                continue;
+            }
             String content = "이번 달 "+card.getCard().getName()+" 실적까지\n"+res+"원 남았어요!";
             String moreInfo = card.getCard().getImgUrl();
 
@@ -110,6 +117,7 @@ public class AnnouncementService {
                     .build();
             announcementRepository.save(announcement);
             List<FCMToken> fcmTokens = fcmTokenRepository.findAllByUsers(users);
+
             for ( FCMToken fcmToken : fcmTokens){
                 String token = fcmToken.getToken();
                 firebaseCloudMessageService.sendNotification(new AnnouncementRequestDto(token,currentDate+"월 실적 알림",content,announcement.getId().toString()));
