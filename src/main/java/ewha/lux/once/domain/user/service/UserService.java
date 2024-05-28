@@ -130,7 +130,6 @@ public class UserService implements UserDetailsService {
         redisService.setAccessBlackValueWithTTL(accessToken,"logout",expiration, TimeUnit.MILLISECONDS);
         // 리프레시 토큰 삭제
         redisService.deleteValue(REFRESH_TOKEN_PREFIX+nowuser.getId().toString());
-        System.out.println("왕왕왕왕왕");
     }
 
     public void deleteUsers(Users nowUser) throws CustomException {

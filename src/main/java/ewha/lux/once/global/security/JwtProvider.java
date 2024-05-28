@@ -62,7 +62,9 @@ public class JwtProvider {
     // accessToken 만료 시간 반환
     public Long getExpiration(String token) {
         Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-        return claims.getExpiration().getTime();
+        long expirationTime = claims.getExpiration().getTime();     // 만료 시간
+        long currentTime = System.currentTimeMillis();              // 현재 시간
+        return expirationTime - currentTime;                        // 남은 시간
     }
 
 
