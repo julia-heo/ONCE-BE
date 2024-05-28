@@ -27,11 +27,8 @@ public class Card extends BaseEntity {
     private String imgUrl;
 
     @Lob
-    @Column(name = "benefits")
+    @Column(name = "benefits", columnDefinition = "LONGTEXT")
     private String benefits;
-
-    @Column(name = "benefitSummary")
-    private String benefitSummary;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")

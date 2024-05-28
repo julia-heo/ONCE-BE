@@ -1,19 +1,18 @@
 package ewha.lux.once.domain.user.service;
 
-import ewha.lux.once.domain.card.entity.Card;
-import ewha.lux.once.domain.card.entity.CardCompany;
-import ewha.lux.once.domain.card.entity.OwnedCard;
+import ewha.lux.once.domain.card.entity.*;
+import ewha.lux.once.domain.home.entity.Announcement;
+import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.home.entity.FCMToken;
+import ewha.lux.once.domain.home.entity.Favorite;
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.repository.CardCompanyRepository;
-import ewha.lux.once.global.repository.CardRepository;
-import ewha.lux.once.global.repository.OwnedCardRepository;
-import ewha.lux.once.global.repository.UsersRepository;
 import ewha.lux.once.global.security.JwtAuthFilter;
 import ewha.lux.once.global.security.JwtProvider;
 import jakarta.servlet.http.HttpServletRequest;
+import ewha.lux.once.global.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
@@ -28,11 +27,8 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +42,13 @@ public class UserService implements UserDetailsService {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtProvider jwtProvider;
+
+    private final AnnouncementRepository announcementRepository;
+    private final ChatHistoryRepository chatHistoryRepository;
+    private final ConnectedCardCompanyRepository connectedCardCompanyRepository;
+    private final FavoriteRepository favoriteRepository;
+    private final FCMTokenRepository fcmTokenRepository;
+
     private final S3Uploader s3Uploader;
     private final RedisTemplate redisTemplate;
     private final RedisService redisService;
@@ -53,7 +56,7 @@ public class UserService implements UserDetailsService {
 
     public LoginResponseDto signup(SignupRequestDto request) throws CustomException, ParseException {
         String loginId = request.getLoginId();
-        String username =  request.getUsername();
+        String username = request.getUsername();
         String password = request.getPassword();
         String nickname = request.getNickname();
         String phone = request.getUserPhoneNum();
@@ -105,7 +108,7 @@ public class UserService implements UserDetailsService {
         Optional<Users> optionalUsers = usersRepository.findByLoginId(loginId);
         Users users = optionalUsers.orElseThrow(() -> new CustomException(ResponseCode.INVALID_USER_ID));
 
-        if (!passwordEncoder.matches(password, users.getPassword())){
+        if (!passwordEncoder.matches(password, users.getPassword())) {
             throw new CustomException(ResponseCode.FAILED_TO_LOGIN);
         }
 
@@ -130,6 +133,18 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUsers(Users nowUser) throws CustomException {
+        List <Announcement> announcementList = announcementRepository.findAnnouncementByUsers(nowUser);
+        announcementRepository.deleteAll(announcementList);
+        List <ChatHistory> chatHistoryList = chatHistoryRepository.findByUsers(nowUser);
+        chatHistoryRepository.deleteAll(chatHistoryList);
+        List <ConnectedCardCompany> connectedCardCompanyList = connectedCardCompanyRepository.findAllByUsers(nowUser);
+        connectedCardCompanyRepository.deleteAll(connectedCardCompanyList);
+        List<OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByUsers(nowUser);
+        ownedCardRepository.deleteAll(ownedCardList);
+        List <Favorite> favoriteList = favoriteRepository.findAllByUsers(nowUser).get();
+        favoriteRepository.deleteAll(favoriteList);
+        List <FCMToken> fcmTokenList = fcmTokenRepository.findAllByUsers(nowUser);
+        fcmTokenRepository.deleteAll(fcmTokenList);
         usersRepository.delete(nowUser);
         return;
     }
@@ -156,6 +171,8 @@ public class UserService implements UserDetailsService {
                 cardSearchDto.setCardId(card.getId());
                 cardSearchDto.setCardName(card.getName());
                 cardSearchDto.setCardImg(card.getImgUrl());
+                if (card.getType().toString() == "DebitCard") cardSearchDto.setType("체크카드");
+                else cardSearchDto.setType("신용카드");
                 cardSearchDtos.add(cardSearchDto);
             }
             cardSearchListDto.setCardList(cardSearchDtos);
@@ -165,8 +182,10 @@ public class UserService implements UserDetailsService {
         return response;
     }
 
-    public List<CardNameSearchDto> getSearchCardName(String name) throws CustomException{
-        List<Card> cards = cardRepository.findAllByNameContains(name);
+    public List<CardNameSearchDto> getSearchCardName(String name, String code) throws CustomException {
+        String[] codes = code.split(",");
+        List<CardCompany> cardCompanies = cardCompanyRepository.findByCodeIn(Arrays.asList(codes));
+        List<Card> cards = cardRepository.findByNameContainingAndCardCompanyIn(name, cardCompanies);
         if (cards.isEmpty()) {
             throw new CustomException(ResponseCode.NO_SEARCH_RESULTS);
         }
@@ -175,12 +194,17 @@ public class UserService implements UserDetailsService {
                         card.getId(),
                         card.getName(),
                         card.getImgUrl(),
-                        card.getCardCompany().getName()
+                        card.getCardCompany().getName(),
+                        getCardTypeName(card.getType())
                 ))
                 .collect(Collectors.toList());
     }
 
-    public void postSearchCard(Users nowUser,postSearchCardListRequestDto requestDto) throws CustomException {
+    private String getCardTypeName(CardType type) {
+        return type == CardType.CreditCard ? "신용카드" : "체크카드";
+    }
+
+    public void postSearchCard(Users nowUser, postSearchCardListRequestDto requestDto) throws CustomException {
         List<Long> card_list = requestDto.getCardList();
         for (Long cardId : card_list) {
             Optional<Card> optionalCard = cardRepository.findById(cardId);
@@ -198,8 +222,8 @@ public class UserService implements UserDetailsService {
     }
 
     public String patchEditProfile(Users nowUser, MultipartFile userProfileImg) throws IOException, CustomException {
-        if(!userProfileImg.isEmpty()) {
-            String storedFileName = s3Uploader.upload(userProfileImg,nowUser.getLoginId()+"-profile.png");
+        if (!userProfileImg.isEmpty()) {
+            String storedFileName = s3Uploader.upload(userProfileImg, nowUser.getLoginId() + "-profile.png");
             nowUser.setProfileImg(storedFileName);
         }
         usersRepository.save(nowUser);
@@ -207,7 +231,7 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean getIdDuplicateCheck(String loginId) throws CustomException {
-        if(usersRepository.existsByLoginId(loginId)) {
+        if (usersRepository.existsByLoginId(loginId)) {
             return false;
         }
         return true;
@@ -219,6 +243,7 @@ public class UserService implements UserDetailsService {
 
     public String patchChangePassword(Users nowUser, ChangePasswordDto changePasswordDto) throws CustomException {
         nowUser.updatePassword(passwordEncoder.encode(changePasswordDto.getPassword()));
+        usersRepository.save(nowUser);
         return ResponseCode.CHANGE_PW_SUCCESS.getMessage();
     }
 

@@ -5,6 +5,7 @@ import ewha.lux.once.domain.card.entity.CardCompany;
 import ewha.lux.once.domain.card.entity.CardType;
 import ewha.lux.once.domain.card.entity.OwnedCard;
 import ewha.lux.once.domain.home.entity.ChatHistory;
+import ewha.lux.once.domain.home.service.CODEFAsyncService;
 import ewha.lux.once.domain.mypage.dto.CardListResponseDto;
 import ewha.lux.once.domain.mypage.dto.ChatHistoryResponseDto;
 import ewha.lux.once.domain.mypage.dto.MypageResponseDto;
@@ -33,6 +34,7 @@ public class MypageService {
     private final ChatHistoryRepository chatHistoryRepository;
     private final CardRepository cardRepository;
     private final CardCompanyRepository cardCompanyRepository;
+    private final CODEFAsyncService codefAsyncService;
 
     public MypageResponseDto getMypageInfo(Users nowUser) throws CustomException {
 
@@ -143,6 +145,8 @@ public class MypageService {
             }
 
             ownedCard.releaseMaincard();
+
+            codefAsyncService.deleteConnectedID(nowUser,ownedCard);
         } else {
             throw new CustomException(ResponseCode.INVALID_OWNED_CARD);
         }

@@ -13,5 +13,6 @@ public class CardSearchDto {
     private Long cardId;
     private String cardName;
     private String cardImg;
+    private String type;
 
 }

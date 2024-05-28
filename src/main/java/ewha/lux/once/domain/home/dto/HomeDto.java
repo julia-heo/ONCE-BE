@@ -11,5 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class HomeDto {
     private String nickname;
+    private int ownedCardCount;
     private List<String> keywordList;
 }

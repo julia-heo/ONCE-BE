@@ -43,6 +43,14 @@ dependencies {
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	//FCM
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+	//CODEF
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+	implementation 'commons-io:commons-io:2.11.0'
 }
 
 tasks.named('test') {
@@ -51,4 +59,17 @@ tasks.named('test') {
 
 jar {
 	enabled = false
+}
+sourceSets{
+	main{
+		resources {
+			srcDirs 'src/main/resources'
+		}
+	}
+}
+
+tasks {
+	processResources {
+		duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+	}
 }

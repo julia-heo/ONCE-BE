@@ -25,11 +25,15 @@ jobs:
           java-version: '17'
           distribution: "adopt"
 
-      - name: Make application.properties
+      - name: Make application.properties & Firebase Service Account Key & DB Config
         run: |
           cd ./src/main/resources
           touch ./application.properties
           echo "${{ secrets.PROPERTIES }}" > ./application.properties
+          echo "${{ secrets.RDS_CONFIG_INI }}" > ./crawling/config.ini
+          mkdir firebase
+          touch ./firebase/once-firebase-adminsdk.json
+          echo '${{ secrets.ONCE_FIREBASE_ADMINSDK }}' > ./firebase/once-firebase-adminsdk.json
         shell: bash
 
       - name: Build with Gradle
@@ -51,11 +55,15 @@ jobs:
           java-version: '17'
           distribution: "adopt"
 
-      - name: Make application.properties
+      - name: Make application.properties & Firebase Service Account Key & DB Config
         run: |
           cd ./src/main/resources
           touch ./application.properties
           echo "${{ secrets.PROPERTIES }}" > ./application.properties
+          echo "${{ secrets.RDS_CONFIG_INI }}" > ./crawling/config.ini
+          mkdir firebase
+          touch ./firebase/once-firebase-adminsdk.json
+          echo '${{ secrets.ONCE_FIREBASE_ADMINSDK }}' > ./firebase/once-firebase-adminsdk.json
         shell: bash
 
       - name: Build with Gradle
@@ -66,9 +74,7 @@ jobs:
       - name: Docker build & push to prod
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          # docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          # docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
 
       - name: Deploy start
@@ -83,5 +89,5 @@ jobs:
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
-            docker-compose up -d
-            docker image prune -f
+            sudo docker-compose up -d
+            sudo docker image prune -f

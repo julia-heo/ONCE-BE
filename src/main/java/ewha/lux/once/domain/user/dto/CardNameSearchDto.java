@@ -14,5 +14,6 @@ public class CardNameSearchDto {
     private String cardName;
     private String cardImg;
     private String companyName;
+    private String type;
 
 }

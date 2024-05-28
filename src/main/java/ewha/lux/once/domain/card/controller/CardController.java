@@ -1,8 +1,9 @@
 package ewha.lux.once.domain.card.controller;
 
-import ewha.lux.once.domain.card.dto.CardGoalRequestDto;
-import ewha.lux.once.domain.card.dto.CardPerformanceRequestDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import ewha.lux.once.domain.card.dto.*;
 import ewha.lux.once.domain.card.service.CardService;
+import ewha.lux.once.domain.card.service.CrawlingService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+
 @Controller
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +21,47 @@ import org.springframework.web.bind.annotation.*;
 public class CardController {
 
     private final CardService cardService;
+    private final CrawlingService crawlingService;
+
+    // ** 추후 삭제해야 함 - 테스트용 ** ==================================
+    @GetMapping("/test/{companyID}")
+    @ResponseBody
+    public CommonResponse<?> testtest(@AuthenticationPrincipal UserAccount user, @PathVariable("companyID") int companyId) {
+        try {
+            crawlingService.cardCrawlingTest(companyId);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    @GetMapping("/test/summary")
+    @ResponseBody
+    public CommonResponse<?> testSummary(@AuthenticationPrincipal UserAccount user, @RequestBody TestSummaryDto testSummaryDto) {
+        try {
+            cardService.updateBenefitSummaryTest(testSummaryDto.getPrompt(), testSummaryDto.getModel_name());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/test/summary/index")
+    @ResponseBody
+    public CommonResponse<?> testSummaryByIndex(@AuthenticationPrincipal UserAccount user, @RequestBody TestSummaryIndexDto testSummaryIndexDto) {
+        try {
+            cardService.updateBenefitSummaryTestByIndex(testSummaryIndexDto.getPrompt(), testSummaryIndexDto.getModel_name(), testSummaryIndexDto.getStart_index(), testSummaryIndexDto.getEnd_index());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // ============================================================
 
     // [Get] 마이월렛 조회
     @GetMapping("")
@@ -65,4 +108,51 @@ public class CardController {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+    // [Get] CODEF 보유 카드 조회
+    @PostMapping("/list")
+    @ResponseBody
+    public CommonResponse<?> codefCardList(@AuthenticationPrincipal UserAccount user, @RequestBody CodefCardListRequestDto codefCardListRequestDto) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, cardService.getCodefCardList(user.getUsers(), codefCardListRequestDto));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Post] 주카드 등록
+    @PostMapping("/main")
+    @ResponseBody
+    public CommonResponse<?> registerMainCard(@AuthenticationPrincipal UserAccount user, @RequestBody MainCardRequestDto mainCardRequestDto) {
+        try {
+            cardService.postRegisterCard(user.getUsers(), mainCardRequestDto);
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Get] 주카드 실적 업데이트
+    @GetMapping("/main/performance")
+    @ResponseBody
+    public CommonResponse<?> registerMainCard(@AuthenticationPrincipal UserAccount user) {
+        try {
+            cardService.updateOwnedCardsPerformance(user.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
+    // [Get] 카드사 연결 현황
+    @GetMapping("/connect")
+    @ResponseBody
+    public CommonResponse<?> checkConnectedCardCompany (@AuthenticationPrincipal UserAccount user) {
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS,cardService.getConnectedCardCompany(user.getUsers()));
+        } catch (CustomException e) {
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+
 }

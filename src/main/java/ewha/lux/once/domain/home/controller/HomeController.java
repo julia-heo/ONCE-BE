@@ -1,5 +1,8 @@
 package ewha.lux.once.domain.home.controller;
 
+import ewha.lux.once.domain.card.dto.SearchStoresRequestDto;
+import ewha.lux.once.domain.home.dto.AnnounceFavoriteRequestDto;
+import ewha.lux.once.domain.home.dto.BeaconRequestDto;
 import ewha.lux.once.domain.home.service.HomeService;
 import ewha.lux.once.global.common.CommonResponse;
 import ewha.lux.once.global.common.CustomException;
@@ -67,8 +70,39 @@ public class HomeController {
         } catch (CustomException e){
             return new CommonResponse<>(e.getStatus());
         }
-
     }
 
+    // [Post] 사용자 근처 단골가게 조회
+    @PostMapping("/gps")
+    @ResponseBody
+    public CommonResponse<?> nearFavorite(@AuthenticationPrincipal UserAccount user, @RequestBody SearchStoresRequestDto nearFavoriteRequestDto){
+        try {
+            return new CommonResponse<>(ResponseCode.SUCCESS, homeService.searchStores(nearFavoriteRequestDto, user.getUsers()));
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+    // [Post] 알림 생성 요청
+    @PostMapping("/announcement")
+    @ResponseBody
+    public CommonResponse<?> announceFavorite(@AuthenticationPrincipal UserAccount user, @RequestBody AnnounceFavoriteRequestDto announceFavoriteRequestDto){
+        try {
+            homeService.postAnnounceFavorite(announceFavoriteRequestDto, user.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
+    // [Post] 비콘 알림 생성 요청
+    @PostMapping("/beacon")
+    @ResponseBody
+    public CommonResponse<?> beaconAnnouncement(@AuthenticationPrincipal UserAccount user, @RequestBody BeaconRequestDto beaconRequestDto){
+        try {
+            homeService.postBeaconAnnouncement(beaconRequestDto, user.getUsers());
+            return new CommonResponse<>(ResponseCode.SUCCESS);
+        } catch (CustomException e){
+            return new CommonResponse<>(e.getStatus());
+        }
+    }
 
 }
