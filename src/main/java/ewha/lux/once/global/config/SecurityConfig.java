@@ -1,5 +1,6 @@
 package ewha.lux.once.global.config;
 
+import ewha.lux.once.domain.user.service.RedisService;
 import ewha.lux.once.global.security.JwtAuthFilter;
 import ewha.lux.once.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
     private final JwtProvider jwtProvider;
-
+    private final RedisService redisService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -57,10 +58,12 @@ public class SecurityConfig {
                     .requestMatchers("/user/duplicate").permitAll()
                     .requestMatchers("/user/login").permitAll()
                     .requestMatchers("/user/auto").permitAll()
+                    .requestMatchers("/user/card/search").permitAll()
+                    .requestMatchers("/user/logout").permitAll()
                     .requestMatchers("/user/card/**").permitAll()
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JwtAuthFilter(jwtProvider, redisService), UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();

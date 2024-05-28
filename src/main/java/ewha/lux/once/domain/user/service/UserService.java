@@ -9,8 +9,12 @@ import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.CustomException;
 import ewha.lux.once.global.common.ResponseCode;
+import ewha.lux.once.global.security.JwtAuthFilter;
+import ewha.lux.once.global.security.JwtProvider;
+import jakarta.servlet.http.HttpServletRequest;
 import ewha.lux.once.global.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,7 +28,9 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +40,22 @@ public class UserService implements UserDetailsService {
     private final CardRepository cardRepository;
     private final CardCompanyRepository cardCompanyRepository;
     private final OwnedCardRepository ownedCardRepository;
+
+    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtProvider jwtProvider;
+
     private final AnnouncementRepository announcementRepository;
     private final ChatHistoryRepository chatHistoryRepository;
     private final ConnectedCardCompanyRepository connectedCardCompanyRepository;
     private final FavoriteRepository favoriteRepository;
     private final FCMTokenRepository fcmTokenRepository;
-    private final S3Uploader s3Uploader;
 
-    public Users signup(SignupRequestDto request) throws CustomException, ParseException {
+    private final S3Uploader s3Uploader;
+    private final RedisTemplate redisTemplate;
+    private final RedisService redisService;
+    private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
+
+    public LoginResponseDto signup(SignupRequestDto request) throws CustomException, ParseException {
         String loginId = request.getLoginId();
         String username = request.getUsername();
         String password = request.getPassword();
@@ -77,10 +91,18 @@ public class UserService implements UserDetailsService {
             usersBuilder.birthday(birthday);
         }
 
-        return usersRepository.save(usersBuilder.benefitGoal(100000).build());
+        Users newUser = usersRepository.save(usersBuilder.benefitGoal(100000).build());
+
+        String accessToken = jwtProvider.createAccessToken(newUser.getLoginId());
+        String refreshToken = jwtProvider.createRefreshToken(newUser.getLoginId());
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto(newUser.getId(), accessToken, refreshToken);
+        redisService.setRefreshValueWithTTL(newUser.getId().toString(), refreshToken, 14L, TimeUnit.DAYS);
+
+        return loginResponseDto;
     }
 
-    public Users authenticate(SignInRequestDto request) throws CustomException {
+    public LoginResponseDto authenticate(SignInRequestDto request) throws CustomException {
         String loginId = request.getLoginId();
         String password = request.getPassword();
 
@@ -93,7 +115,22 @@ public class UserService implements UserDetailsService {
 
         users.setLastLogin();
         usersRepository.save(users);
-        return users;
+
+        String accessToken = jwtProvider.createAccessToken(users.getLoginId());
+        String refreshToken = jwtProvider.createRefreshToken(users.getLoginId());
+        LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
+        redisService.setRefreshValueWithTTL(users.getId().toString(), refreshToken, 14L, TimeUnit.DAYS);
+
+        return loginResponseDto;
+    }
+
+    public void postLogout(HttpServletRequest request, Users nowuser) throws CustomException {
+        String accessToken = jwtAuthFilter.resolveToken(request,jwtAuthFilter.HEADER_KEY);
+        Long expiration = jwtProvider.getExpiration(accessToken);
+        redisService.setAccessBlackValueWithTTL(accessToken,"logout",expiration, TimeUnit.MILLISECONDS);
+        // 리프레시 토큰 삭제
+        redisService.deleteValue(REFRESH_TOKEN_PREFIX+nowuser.getId().toString());
+        System.out.println("왕왕왕왕왕");
     }
 
     public void deleteUsers(Users nowUser) throws CustomException {

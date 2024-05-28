@@ -2,7 +2,7 @@ package ewha.lux.once.global.security;
 
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.repository.UsersRepository;
-import ewha.lux.once.domain.user.service.UserService;
+import org.springframework.data.redis.core.RedisTemplate;
 import io.jsonwebtoken.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,85 +15,70 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 public class JwtProvider {
+
     private static final long ACCESS_EXPIRE_TIME = 1000l * 60 * 60 * 2; // 2시간
     private static final long REFRESH_EXPIRE_TIME = 1000l * 60 * 60 * 24 * 14; // 2주
-    private final UserService userService;
+
+
     private final UsersRepository usersRepository;
+    private final RedisTemplate redisTemplate;
+    private static final String ACCESS_TOKEN_BLACKLIST_PREFIX = "blacklistAccessToken:";
+
 
     @Getter
     @Value("${spring.jwt.secret}")
     private String secretKey;
 
-    // 토큰 생성
-    public String generateToken(String loginId,Long accessTokenValidTime,boolean isAccessToken) {
-        Claims claims = Jwts.claims().setSubject(loginId);
-        String subject = isAccessToken ? "access" : "refresh";
-
-        claims.put("authority", subject); // 권한
-
+    public String createAccessToken(String userId) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + accessTokenValidTime); // 만료 시간
+        Date validity = new Date(now.getTime() + ACCESS_EXPIRE_TIME);
 
         return Jwts.builder()
-                .setClaims(claims)
+                .setSubject(userId)
                 .setIssuedAt(now)
-                .setExpiration(expiration)
-                .signWith(SignatureAlgorithm.HS512, secretKey) // (비밀키, 해싱 알고리즘)
+                .setExpiration(validity)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
-    // 액세스 토큰 생성
-    public String generateAccessToken(String loginId) {
-        return generateToken(loginId, ACCESS_EXPIRE_TIME,true);
-    }
-
-    // 리프레쉬 토큰 생성
-    public String generateRefreshToken(String loginId) {
-        return generateToken(loginId, REFRESH_EXPIRE_TIME,false);
-    }
-
-    // 토큰 유효성 확인, t/f 반환
-    public boolean validateToken(String token) throws ExpiredJwtException {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        Date expiration = claims.getExpiration();
+    public String createRefreshToken(String userId) {
         Date now = new Date();
+        Date validity = new Date(now.getTime() + REFRESH_EXPIRE_TIME);
 
-        if (expiration.before(now)) {
-            return false;
-        }
-
-        return true;
+        return Jwts.builder()
+                .setSubject(userId)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
     }
 
-    // 토큰 검증 및 payload 추출 (토큰으로 현재 Users 찾아 반환)
-    public Users validateTokenAndGetUsers(String token){
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        String loginId = claims.getSubject();
+    // 토큰으로 User찾아 반환
+    public Users extractUsersFromToken(String token) {
+
+        String loginId = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
         return usersRepository.findByLoginId(loginId).get();
     }
 
-
-    // 토큰 만료 여부 확인
-    public boolean validateAccessTokenExpiration(String  token) {
-        try{
-            Jws<Claims> claims = Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token);
-
-            return claims.getBody().getExpiration().before(new Date()); // 현재보다 만료가 이전인지 확인
-        }
-        catch (ExpiredJwtException ignored){
-            return  true;
-        }
+    // accessToken 만료 시간 반환
+    public Long getExpiration(String token) {
+        Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        return claims.getExpiration().getTime();
     }
 
 
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isAccessTokenLoggedOut(String accessToken) {
+        // Redis에서 액세스 토큰의 상태를 가져옴
+        String key = ACCESS_TOKEN_BLACKLIST_PREFIX + accessToken;
+        // 로그아웃 상태인지 확인
+        return redisTemplate.hasKey(key);
+    }
 }

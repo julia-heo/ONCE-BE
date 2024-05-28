@@ -12,10 +12,12 @@ public enum ResponseCode {
     CHANGE_MYPAGE_SUCCESS(1002, true, "내 정보 수정을 성공했습니다."),
     RELEASE_MAINCARD_SUCCESS(1003, true, "주카드 해제를 성공했습니다."),
     DELETE_CARD_SUCCESS(1004, true, "등록 카드 삭제에 성공했습니다."),
+    VALID_ACCESS_TOKEN(1005, true, "유효한 access token입니다."),
 
     /*
         2000~ : Request 오류
     */
+
 
     // =====================================
     /*
@@ -26,6 +28,10 @@ public enum ResponseCode {
     INVALID_USER_ID(3001, false, "아이디가 존재하지 않습니다."),
     FAILED_TO_LOGIN(3002, false, "비밀번호가 일치하지 않습니다."),
     DUPLICATED_USER_NAME(3003, false,"이미 존재하는 아이디입니다."),
+    UNAUTHORIZED_REFRESH(3004, false, "refresh token이 만료되었습니다. 다시 로그인해주세요"),
+    UNAUTHORIZED(3005, false, "access token이 유효하지 않습니다."),
+    INVALID_REFRESH(3006, false, "refresh token이 유효하지 않습니다."),
+    BLACKLISTED_TOKEN(3007, false, "블랙리스트에 등록된 토큰입니다."),
 
     // 3100~ : card 관련 오류
     CARD_NOT_FOUND(3100, false,"존재하지 않는 카드입니다."),
