@@ -3,7 +3,7 @@ package ewha.lux.once.global.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ewha.lux.once.domain.user.dto.LoginResponseDto;
 import ewha.lux.once.domain.user.service.RedisService;
-import ewha.lux.once.global.common.CustomException;
+import ewha.lux.once.global.common.ResponseCode;
 import ewha.lux.once.global.common.UserAccount;
 import ewha.lux.once.domain.user.entity.Users;
 import ewha.lux.once.global.common.ResponseDto;
@@ -13,27 +13,28 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final RedisService redisService;
     public static final String HEADER_KEY = "Authorization";
     public static final String REFRESH_HEADER_KEY = "Authorization-refresh";
     public static final String PREFIX = "Bearer ";
+    private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
 
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
@@ -43,52 +44,85 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String accessToken = resolveToken(request, HEADER_KEY);
         String refreshToken = resolveToken(request, REFRESH_HEADER_KEY);
 
-        // 자동 로그인 요청인 경우
-        if(request.getRequestURI().equals("/user/auto")) {
-            if ("Deprecated".equals(redisService.getValue(refreshToken))) {
-                response.setContentType("application/json");
-                response.setCharacterEncoding("utf-8");
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "refresh token이 만료되었습니다. 다시 로그인해주세요"))));
+        if (accessToken != null && jwtProvider.validateToken(accessToken)) {
+            // access token있고 유효할 때
+            if(jwtProvider.isAccessTokenLoggedOut(accessToken)){
+                // 블랙리스트
+                sendErrorResponse(response,403,ResponseCode.BLACKLISTED_TOKEN);
                 return;
             }
-            // 토큰 유효성 검사
-            if (!jwtProvider.validateAccessTokenExpiration(accessToken)) { // accesstoken이 유효한 경우
-                Users users = jwtProvider.validateTokenAndGetUsers(accessToken);
-                LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), accessToken, refreshToken);
 
-                response.setContentType("application/json");
-                response.setCharacterEncoding("utf-8");
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "access token이 검증되었습니다.", loginResponseDto))));
-                return;
-            } else if (!jwtProvider.validateAccessTokenExpiration(refreshToken)) { // accesstoken 만료, refreshtoken이 유효한 경우
-                Users users = jwtProvider.validateTokenAndGetUsers(refreshToken);
-                String newAccessToken = jwtProvider.generateAccessToken(users.getLoginId());
-                LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), newAccessToken, refreshToken);
-
-                response.setContentType("application/json");
-                response.setCharacterEncoding("utf-8");
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000,true, "access token이 재발급되었습니다.", loginResponseDto))));
-                return;
-            } else { // refreshtoken 만료
-                response.setContentType("application/json");
-                response.setCharacterEncoding("utf-8");
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write(new ObjectMapper().writeValueAsString(ResponseEntity.ok(ResponseDto.response(1000, true, "refresh token이 만료되었습니다. 다시 로그인해주세요"))));
-                return;
-            }
-        }
-        if(StringUtils.hasText(accessToken) && jwtProvider.validateToken(accessToken)){
-            Users users = jwtProvider.validateTokenAndGetUsers(accessToken);
-
+            // users 찾아 인증정보 저장
+            Users users = jwtProvider.extractUsersFromToken(accessToken);
             saveAuthentication(users);
-            filterChain.doFilter(request, response);
+
+        } else if (refreshToken != null) {
+            if (jwtProvider.validateToken(refreshToken)) {
+                // refresh token있고 유효할 때
+
+                Users users = jwtProvider.extractUsersFromToken(refreshToken);
+                String redisRefreshToken = (String) redisService.getValue(REFRESH_TOKEN_PREFIX+users.getId().toString());
+
+                if (redisRefreshToken != null && redisRefreshToken.equals(refreshToken)) {
+                    // access token 재발급
+                    String newAccessToken = jwtProvider.createAccessToken(users.getLoginId());
+
+                    response.setHeader(HEADER_KEY, PREFIX + newAccessToken);
+
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("utf-8");
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    LoginResponseDto loginResponseDto = new LoginResponseDto(users.getId(), newAccessToken, refreshToken);
+
+                    ResponseDto<LoginResponseDto> responseDto1 = ResponseDto.response(1000, true,  "access token이 재발급되었습니다.", loginResponseDto);
+
+                    PrintWriter writer = response.getWriter();
+                    writer.write(new ObjectMapper().writeValueAsString(responseDto1));
+                    writer.flush();
+
+                    saveAuthentication(users);
+                    return;
+
+                } else {
+                    // refresh token이 유효하지 않을 때
+                    sendErrorResponse(response,403,ResponseCode.INVALID_REFRESH);
+                    return;
+                }
+            } else {
+                // refresh token이 만료되었을 때
+                sendErrorResponse(response,403,ResponseCode.UNAUTHORIZED_REFRESH);
+                return;
+            }
+        } else if (accessToken != null) {
+            // access token이 유효하지 않을 때
+            sendErrorResponse(response,403,ResponseCode.UNAUTHORIZED);
             return;
         }
+        System.out.println("왜");
         filterChain.doFilter(request, response);
+
     }
+
+    private void sendErrorResponse(HttpServletResponse response, int statusCode, ResponseCode code) throws IOException {
+        response.setStatus(statusCode);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        PrintWriter writer = response.getWriter();
+        ResponseDto<?> responseDto = ResponseDto.response(code.getCode(), code.isInSuccess(),  code.getMessage());
+        writer.write(new ObjectMapper().writeValueAsString(responseDto));
+        writer.flush();
+    }
+
+    // Token만 분리해 반환 (Bearer 제거)
+    public String resolveToken(HttpServletRequest request, String headerKey) {
+        String bearerToken = request.getHeader(headerKey);
+        if (bearerToken != null && bearerToken.startsWith(PREFIX)) {
+            return bearerToken.substring(PREFIX.length());
+        }
+        return null;
+    }
+
     public void saveAuthentication(Users users) {
         UserAccount userAccount = new UserAccount(users);
 
@@ -101,18 +135,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
-    }
-
-    // Token만 분리해 반환
-    private String resolveToken(HttpServletRequest request, String key){
-        String token = request.getHeader(key);
-
-        // key의 헤더가 존재하고, Bearer로 시작한다면
-        if(!ObjectUtils.isEmpty(token) && token.startsWith(PREFIX)) {
-            return token.substring(PREFIX.length());
-        }
-
-        return null;
     }
 
 }

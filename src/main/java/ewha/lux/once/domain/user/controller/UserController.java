@@ -48,14 +48,17 @@ public class UserController {
 
     // [Post] 로그아웃
     @PostMapping("/logout")
-    public CommonResponse<?> logout(HttpServletRequest request, @AuthenticationPrincipal UserAccount userAccount) {
+    @ResponseBody
+    public CommonResponse<?> logoutPage(HttpServletRequest request,@AuthenticationPrincipal UserAccount userAccount) {
         try {
-            userService.postLogout(userAccount.getUsers(), request);
+            userService.postLogout(request, userAccount.getUsers());
             return new CommonResponse<>(ResponseCode.SUCCESS);
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
     }
+
+
 
     // [Delete] 회원 탈퇴
     @DeleteMapping("/quit")

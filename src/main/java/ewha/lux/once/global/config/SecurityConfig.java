@@ -59,6 +59,7 @@ public class SecurityConfig {
                     .requestMatchers("/user/login").permitAll()
                     .requestMatchers("/user/auto").permitAll()
                     .requestMatchers("/user/card/search").permitAll()
+                    .requestMatchers("/user/logout").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthFilter(jwtProvider, redisService), UsernamePasswordAuthenticationFilter.class);
