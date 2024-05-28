@@ -98,7 +98,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             sendErrorResponse(response,403,ResponseCode.UNAUTHORIZED);
             return;
         }
-        System.out.println("왜");
         filterChain.doFilter(request, response);
 
     }

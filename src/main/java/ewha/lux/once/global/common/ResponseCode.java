@@ -12,6 +12,7 @@ public enum ResponseCode {
     CHANGE_MYPAGE_SUCCESS(1002, true, "내 정보 수정을 성공했습니다."),
     RELEASE_MAINCARD_SUCCESS(1003, true, "주카드 해제를 성공했습니다."),
     DELETE_CARD_SUCCESS(1004, true, "등록 카드 삭제에 성공했습니다."),
+    VALID_ACCESS_TOKEN(1005, true, "유효한 access token입니다."),
 
     /*
         2000~ : Request 오류

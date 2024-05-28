@@ -2,10 +2,7 @@ package ewha.lux.once.domain.user.controller;
 
 import ewha.lux.once.domain.user.dto.*;
 import ewha.lux.once.domain.user.service.UserService;
-import ewha.lux.once.global.common.CommonResponse;
-import ewha.lux.once.global.common.CustomException;
-import ewha.lux.once.global.common.ResponseCode;
-import ewha.lux.once.global.common.UserAccount;
+import ewha.lux.once.global.common.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
@@ -44,6 +41,11 @@ public class UserController {
         } catch (CustomException e) {
             return new CommonResponse<>(e.getStatus());
         }
+    }
+    // [Post] 자동로그인
+    @PostMapping("/auto")
+    public CommonResponse<?> autologinPage() {
+        return new CommonResponse<>(ResponseCode.VALID_ACCESS_TOKEN);
     }
 
     // [Post] 로그아웃
