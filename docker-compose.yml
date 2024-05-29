@@ -27,3 +27,6 @@ services:
         mode: non-blocking
     stdin_open: true
     tty: true
+
+volumes:
+  redis-data:
