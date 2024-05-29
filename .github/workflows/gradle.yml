@@ -91,4 +91,4 @@ jobs:
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}
             sudo docker-compose up -d
             sudo docker image prune -f
-            sudo docker run --name redis -p 6379:6379 -d --restart=unless-stopped redis
+            sudo docker run --name redis -p 6379:6379 -d --restart=unless-stopped -v redis-data:/data redis
