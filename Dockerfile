@@ -7,9 +7,9 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 RUN wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.198-1_amd64.deb && \
     apt -y install ./google-chrome-stable_114.0.5735.198-1_amd64.deb
 
-RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip && \
-     unzip /tmp/chromedriver.zip -d /usr/bin && \
-     chmod +x /usr/bin/chromedriver
+# RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip && \
+     # unzip /tmp/chromedriver.zip -d /usr/bin && \
+     # chmod +x /usr/bin/chromedriver
 
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
