@@ -67,6 +67,47 @@ public class HomeService {
         } catch (JsonProcessingException e) {
             throw new CustomException(ResponseCode.FAILED_TO_OPENAI_RECOMMEND);
         }
+        if(discount==0){
+            List <OwnedCard> mainOwncardList = ownedCardRepository.findOwnedCardByUsersAndIsMain(nowUser, true);
+            if (mainOwncardList.size() == 0) {
+                List <OwnedCard> ownedCardList = ownedCardRepository.findOwnedCardByUsers(nowUser);
+
+                // 실적 많이 남은 카드 찾기
+                OwnedCard maxDifferenceCard = null;
+                int maxDifference = Integer.MIN_VALUE;
+
+                for (OwnedCard ownedCard : ownedCardList) {
+                    int difference = ownedCard.getPerformanceCondition() - ownedCard.getCurrentPerformance();
+                    if (difference > maxDifference) {
+                        maxDifference = difference;
+                        maxDifferenceCard = ownedCard;
+                    }
+                }
+
+                card = maxDifferenceCard.getCard();
+                benefit= keyword+"에 해당하는 혜택이 없어요.\n실적이 가장 많이 남은 카드에요";
+
+            } else if(mainOwncardList.size() == 1) {
+                card = mainOwncardList.get(0).getCard();
+                benefit= keyword+"에 해당하는 혜택이 없어요.\n주카드로 결제해보세요.";
+            } else {
+                OwnedCard maxDifferenceCard = null;
+                int maxDifference = Integer.MIN_VALUE;
+
+                for (OwnedCard ownedCard : mainOwncardList) {
+                    int difference = ownedCard.getPerformanceCondition() - ownedCard.getCurrentPerformance();
+                    if (difference > maxDifference) {
+                        maxDifference = difference;
+                        maxDifferenceCard = ownedCard;
+                    }
+                }
+
+                card = maxDifferenceCard.getCard();
+
+                benefit= keyword+"에 해당하는 혜택이 없어요.\n실적이 가장 많이 남은 주카드에요.";
+            }
+        }
+
 
         // 챗봇 대화 기록
         ChatHistory chat = ChatHistory.builder()
@@ -83,7 +124,7 @@ public class HomeService {
         // Chat 객체 저장
         ChatHistory savedChat = chatHistoryRepository.save(chat);
 
-        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardIdAndUsers(Long.valueOf(cardId),nowUser);
+        OwnedCard ownedCard = ownedCardRepository.findOwnedCardByCardIdAndUsers(card.getId(),nowUser);
 
         // 챗봇 응답
         ChatDto chatDto = ChatDto.builder()
