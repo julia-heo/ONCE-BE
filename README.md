@@ -63,42 +63,42 @@
   
   |Feature|URI|
   |--|--|
-  |[회원가입](https://haewonny.notion.site/81e4d32d4d5046a09caaafd3d712e0b0)|`POST /user/signup`|
-  |[아이디 중복 확인](https://www.notion.so/haewonny/eb19e5efa62945558280e0c8fdb11f30)|`GET /user/duplicate?loginId=아이디`|
-  |[자동로그인](https://www.notion.so/haewonny/a26a0b011b6a4fb79f43e387d4ee3579?pvs=4)|`POST /user/auto`|
-  |[로그인](https://www.notion.so/haewonny/b38bec0d9a5440f9a796eb6d69d6a80f?pvs=4)|`POST /user/login`|
-  |[기기 토큰 저장 ](https://www.notion.so/48d0fd9115df40329503ff83e18f3715?pvs=21)|`POST /user/token`|
-  |[회원 탈퇴](https://www.notion.so/681060114c1349a5b477217b7a1b997a?pvs=21)|`DELETE /user/quit`|
-  |[비밀번호 확인](https://www.notion.so/b366e8dacecb447db6c97be4b9eaf717?pvs=21)|`POST /user/edit/pw`|
-  |[비밀번호 변경](https://www.notion.so/d31c6be979894c06a93a253da493c5bc?pvs=21)|`PATCH /user/edit/pw`|
-  |[아이디 찾기](https://www.notion.so/67c76b1e8d424061892bb092e6b53bb1?pvs=21)|`POST /user/find/id`|
-  |[비밀번호 찾기](https://www.notion.so/562c51c122e4458ea7e9103fc60f6067?pvs=21)|`POST /user/find/pw`|
-  |[내 정보 수정하기 페이지](https://www.notion.so/6109536b5380418287af0e4998fe922f?pvs=21)|`GET /user/edit`|
-  |[회원 정보 수정](https://www.notion.so/bb4d955235b04f489e0a60d520b8a249?pvs=21)|`PATCH /user/edit`|
-  |[프로필 이미지 수정(등록)](https://www.notion.so/5c0588ab85e5468ba9b804f1ca72cf80?pvs=21)|`PATCH /user/edit/profile`|
-  |[카드 등록 1단계 (카드사로 카드 검색)](https://www.notion.so/1-43b72b3c6e504bb7acbcc82e25e44773?pvs=21)|`GET /user/card/search?code=0301,0302`|
-  |[카드 등록 2단계 (카드 이름 검색)](https://www.notion.so/2-a3bae8eb3a404948a0d628d28d8f8627?pvs=21)|`GET /user/card/searchname?name=굿데이&code=0301,0302`|
-  |[카드 등록 3단계 (카드 등록)](https://www.notion.so/3-79822161ce854920a4b3fa044c12a380?pvs=21)|`POST /user/card`|
-  |[챗봇 카드 추천](https://www.notion.so/0563b60116a24415a68a13db55996b13?pvs=21)|`GET /home?keyword=GS25&paymentAmount=10000`|
-  |[홈화면 기본 정보](https://haewonny.notion.site/c9feaf8878b44c2fa2f3998e18cdec94)|`GET /home/basic`|
-  |[결제 여부 변경](https://www.notion.so/977de7a067b84f14a3acbf053b3afd3d?pvs=21)|`PATCH /home/{chat_id}`|
-  |[알림 리스트 조회](https://www.notion.so/7d3699bb0725475c9186679d0bb24e28?pvs=21)|`GET /home/announcement`|
-  |[알림 상세 조회](https://www.notion.so/e3e9d2f9afc448ad87f629711e9b26d6?pvs=21)|`GET /home/announcement/{announceId}`|
-  |[사용자 근처 단골가게 조회](https://www.notion.so/899e5fda2f81494993b22b2298eefbc4?pvs=21)|`GET /home/gps`|
-  |[알림 생성 요청](https://www.notion.so/2661c7a83f3845a2aae26d3342a06fea?pvs=21)|`POST /home/announcement`|
-  |[CODEF 보유카드 조회](https://www.notion.so/CODEF-fdc68b1817fb42f1b6e176b135749f51?pvs=21)|`GET/card/list`|
-  |[CODEF 카드사 연결 현황](https://www.notion.so/CODEF-f09845097643404dbac4975003d82ad1?pvs=21)|`GET/card/connect`|
-  |[CODEF 주카드 등록](https://www.notion.so/CODEF-0dcbcfd7f9a448f6ab3420c63d7fac42?pvs=21)|`POST /card/main`|
-  |[CODEF 주카드 실적 조회](https://www.notion.so/CODEF-7c624bc8db78428daff21574a82b7e86?pvs=21)|`GET /card/main/performance`|
-  |[마이월렛 조회](https://www.notion.so/ef3d4f6127604c8aa458f2e6be21589d?pvs=21)|`GET /card`|
-  |[주카드 아닌 카드 실적 입력](https://www.notion.so/7fe0661e7dbb4dd497d630d2c151c60a?pvs=21)|`POST /card/performance`|
-  |[월별혜택조회](https://www.notion.so/c2bc02499d7440daa57a279940737d4d?pvs=21)|`GET /card/benefit?month=8`|
-  |[목표 혜택 금액 입력](https://www.notion.so/7edb985fb06f47e1b045e68d9fdf6280?pvs=21)|`POST /card/benefitgoal`|
-  |[마이페이지 조회](https://www.notion.so/61fcbd7c42e54240a09750afe75168f1?pvs=21)|`GET /mypage`|
-  |[챗봇 대화 조회](https://www.notion.so/fbfd12c6d50f488d9495c98f094f4c1d?pvs=21)|`GET /mypage/chathistory?month=2024-01`|
-  |[카드 목록 조회](https://www.notion.so/3eb9972d9fed4e418a1d614232672e9a?pvs=21)|`GET /mypage/maincard`|
-  |[주카드 해제](https://www.notion.so/a29c406a019b402ba3f9d1fe15827b16?pvs=21)|`PATCH /mypage/maincard/{ownedCardId}`|
-  |[등록 카드 삭제](https://www.notion.so/efff9ca6d5d1494b8f56a7bdbefde6e7?pvs=21)|`DELETE /mypage/maincard/{ownedCardId}`|
+  |👤 [회원가입](https://haewonny.notion.site/81e4d32d4d5046a09caaafd3d712e0b0)|`POST /user/signup`|
+  |👤 [아이디 중복 확인](https://www.notion.so/haewonny/eb19e5efa62945558280e0c8fdb11f30)|`GET /user/duplicate?loginId=아이디`|
+  |👤 [자동로그인](https://www.notion.so/haewonny/a26a0b011b6a4fb79f43e387d4ee3579?pvs=4)|`POST /user/auto`|
+  |👤 [로그인](https://www.notion.so/haewonny/b38bec0d9a5440f9a796eb6d69d6a80f?pvs=4)|`POST /user/login`|
+  |👤 [기기 토큰 저장 ](https://www.notion.so/48d0fd9115df40329503ff83e18f3715?pvs=21)|`POST /user/token`|
+  |👤 [회원 탈퇴](https://www.notion.so/681060114c1349a5b477217b7a1b997a?pvs=21)|`DELETE /user/quit`|
+  |👤 [비밀번호 확인](https://www.notion.so/b366e8dacecb447db6c97be4b9eaf717?pvs=21)|`POST /user/edit/pw`|
+  |👤 [비밀번호 변경](https://www.notion.so/d31c6be979894c06a93a253da493c5bc?pvs=21)|`PATCH /user/edit/pw`|
+  |👤 [아이디 찾기](https://www.notion.so/67c76b1e8d424061892bb092e6b53bb1?pvs=21)|`POST /user/find/id`|
+  |👤 [비밀번호 찾기](https://www.notion.so/562c51c122e4458ea7e9103fc60f6067?pvs=21)|`POST /user/find/pw`|
+  |👤 [내 정보 수정하기 페이지](https://www.notion.so/6109536b5380418287af0e4998fe922f?pvs=21)|`GET /user/edit`|
+  |👤 [회원 정보 수정](https://www.notion.so/bb4d955235b04f489e0a60d520b8a249?pvs=21)|`PATCH /user/edit`|
+  |👤 [프로필 이미지 수정(등록)](https://www.notion.so/5c0588ab85e5468ba9b804f1ca72cf80?pvs=21)|`PATCH /user/edit/profile`|
+  |👤 [카드 등록 1단계 (카드사로 카드 검색)](https://www.notion.so/1-43b72b3c6e504bb7acbcc82e25e44773?pvs=21)|`GET /user/card/search?code=0301,0302`|
+  |👤 [카드 등록 2단계 (카드 이름 검색)](https://www.notion.so/2-a3bae8eb3a404948a0d628d28d8f8627?pvs=21)|`GET /user/card/searchname?name=굿데이&code=0301,0302`|
+  |👤 [카드 등록 3단계 (카드 등록)](https://www.notion.so/3-79822161ce854920a4b3fa044c12a380?pvs=21)|`POST /user/card`|
+  |🏠 [챗봇 카드 추천](https://www.notion.so/0563b60116a24415a68a13db55996b13?pvs=21)|`GET /home?keyword=GS25&paymentAmount=10000`|
+  |🏠 [홈 화면 기본 정보](https://haewonny.notion.site/c9feaf8878b44c2fa2f3998e18cdec94)|`GET /home/basic`|
+  |🏠 [결제 여부 변경](https://www.notion.so/977de7a067b84f14a3acbf053b3afd3d?pvs=21)|`PATCH /home/{chat_id}`|
+  |🏠 [알림 리스트 조회](https://www.notion.so/7d3699bb0725475c9186679d0bb24e28?pvs=21)|`GET /home/announcement`|
+  |🏠 [알림 상세 조회](https://www.notion.so/e3e9d2f9afc448ad87f629711e9b26d6?pvs=21)|`GET /home/announcement/{announceId}`|
+  |🏠 [사용자 근처 단골가게 조회](https://www.notion.so/899e5fda2f81494993b22b2298eefbc4?pvs=21)|`GET /home/gps`|
+  |🏠 [알림 생성 요청](https://www.notion.so/2661c7a83f3845a2aae26d3342a06fea?pvs=21)|`POST /home/announcement`|
+  |💳 [CODEF 보유카드 조회](https://www.notion.so/CODEF-fdc68b1817fb42f1b6e176b135749f51?pvs=21)|`GET/card/list`|
+  |💳 [CODEF 카드사 연결 현황](https://www.notion.so/CODEF-f09845097643404dbac4975003d82ad1?pvs=21)|`GET/card/connect`|
+  |💳 [CODEF 주카드 등록](https://www.notion.so/CODEF-0dcbcfd7f9a448f6ab3420c63d7fac42?pvs=21)|`POST /card/main`|
+  |💳 [CODEF 주카드 실적 조회](https://www.notion.so/CODEF-7c624bc8db78428daff21574a82b7e86?pvs=21)|`GET /card/main/performance`|
+  |💳 [마이월렛 조회](https://www.notion.so/ef3d4f6127604c8aa458f2e6be21589d?pvs=21)|`GET /card`|
+  |💳 [주카드 아닌 카드 실적 입력](https://www.notion.so/7fe0661e7dbb4dd497d630d2c151c60a?pvs=21)|`POST /card/performance`|
+  |💳 [월별혜택조회](https://www.notion.so/c2bc02499d7440daa57a279940737d4d?pvs=21)|`GET /card/benefit?month=8`|
+  |💳 [목표 혜택 금액 입력](https://www.notion.so/7edb985fb06f47e1b045e68d9fdf6280?pvs=21)|`POST /card/benefitgoal`|
+  |💟 [마이페이지 조회](https://www.notion.so/61fcbd7c42e54240a09750afe75168f1?pvs=21)|`GET /mypage`|
+  |💟 [챗봇 대화 조회](https://www.notion.so/fbfd12c6d50f488d9495c98f094f4c1d?pvs=21)|`GET /mypage/chathistory?month=2024-01`|
+  |💟 [카드 목록 조회](https://www.notion.so/3eb9972d9fed4e418a1d614232672e9a?pvs=21)|`GET /mypage/maincard`|
+  |💟 [주카드 해제](https://www.notion.so/a29c406a019b402ba3f9d1fe15827b16?pvs=21)|`PATCH /mypage/maincard/{ownedCardId}`|
+  |💟 [등록 카드 삭제](https://www.notion.so/efff9ca6d5d1494b8f56a7bdbefde6e7?pvs=21)|`DELETE /mypage/maincard/{ownedCardId}`|
 </details>
 
 
